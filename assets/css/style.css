@@ -1,0 +1,17 @@
+/* Minimal, clean styling suitable for GitHub Pages */
+:root { --maxw: 920px; --pad: 1rem; }
+* { box-sizing: border-box; }
+body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, 'Helvetica Neue', Arial, 'Noto Sans', 'Liberation Sans', sans-serif;
+       line-height: 1.55; margin: 0; color: #111; }
+header { background: #f6f8fa; border-bottom: 1px solid #eaecef; }
+nav { max-width: var(--maxw); margin: 0 auto; padding: .75rem var(--pad); display: flex; gap: 1rem; flex-wrap: wrap; align-items: baseline; }
+nav a { text-decoration: none; color: #0969da; }
+nav .brand { font-weight: 700; color: #24292f; }
+main { max-width: var(--maxw); margin: 0 auto; padding: 1.25rem var(--pad) 3rem; }
+h1, h2, h3 { line-height: 1.25; }
+footer { max-width: var(--maxw); margin: 0 auto; padding: 2rem var(--pad); color: #57606a; border-top: 1px solid #eaecef; }
+.card { border: 1px solid #eaecef; border-radius: 8px; padding: 1rem; margin: 1rem 0; }
+ul.inline { display: flex; flex-wrap: wrap; gap: .75rem 1.25rem; padding-left: 1.25rem; }
+code, pre { background: #f6f8fa; border: 1px solid #eaecef; border-radius: 6px; padding: .2rem .4rem; }
+table { border-collapse: collapse; width: 100%; }
+td, th { border: 1px solid #eaecef; padding: .5rem .6rem; text-align: left; }
