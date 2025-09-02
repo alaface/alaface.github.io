@@ -1,30 +1,44 @@
-// Build papers/index.html from zbMATH Open (author: "Laface, Antonio")
-// Run in GitHub Actions (node >=18, uses global fetch)
+// Build papers/index.html from a local BibTeX file exported from zbMATH.
+// Run in GitHub Actions (Node >= 18)
+
 const fs = require('node:fs/promises');
 
-const AUTHOR = 'Laface, Antonio';
-const ROWS = 200;
+const BIB_PATH = 'data/papers.bib';
 
-const ZB_URL = 'https://api.zbmath.org/v1/document?' + new URLSearchParams({
-  q: `au:"${AUTHOR}"`,
-  size: String(ROWS),
-  sort: 'year.desc'
-}).toString();
+// --- tiny BibTeX parser (very tolerant, good enough for common @article/@incollection) ---
+function parseBibtex(bib) {
+  const entries = [];
+  const blocks = bib.split('@').slice(1); // skip preamble
+  for (const block of blocks) {
+    const type = block.slice(0, block.indexOf('{')).trim().toLowerCase();
+    const rest = block.slice(block.indexOf('{') + 1);
+    const end = rest.lastIndexOf('}');
+    const body = rest.slice(0, end);
 
-const esc = (s='') => s.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
-const yearOf = it => it.year || it?.published?.year || '';
-const doiURL = doi => doi ? `https://doi.org/${encodeURIComponent(doi)}` : '';
-const mrLookup = doi => doi ? `https://mathscinet.ams.org/mathscinet/relay?mr=Lookup&url=https://mathscinet.ams.org/mathscinet/search/publications.html?pg1=DOI&s1=${encodeURIComponent(doi)}` : '';
-const zbDocURL = id => id ? `https://zbmath.org/?q=an:${encodeURIComponent(id)}` : '';
+    // key, fields
+    const key = body.slice(0, body.indexOf(',')).trim();
+    const fieldsRaw = body.slice(body.indexOf(',') + 1);
 
-// strict match: keep only items that explicitly list "Laface, Antonio"
-function includesExactZbName(list){
-  return (list||[]).some(a => {
-    const name = typeof a === 'string' ? a : (a.name || [a.first, a.last].filter(Boolean).join(', '));
-    const n = (name||'').trim().toLowerCase();
-    return n === 'laface, antonio' || n === 'antonio laface';
-  });
+    const fields = {};
+    // naive field matcher: name = { ... } or " ... "
+    const re = /([a-zA-Z\-]+)\s*=\s*(\{([^{}]*|(\{[^{}]*\}))*\}|"[^"]*"|[^,]+)\s*,?/gms;
+    let m;
+    while ((m = re.exec(fieldsRaw)) !== null) {
+      let val = m[2].trim();
+      if ((val.startsWith('{') && val.endsWith('}')) || (val.startsWith('"') && val.endsWith('"'))) {
+        val = val.slice(1, -1);
+      }
+      fields[m[1].toLowerCase()] = val.replace(/\s+/g, ' ').trim();
+    }
+    entries.push({ type, key, ...fields });
+  }
+  return entries;
 }
+
+function esc(s=''){ return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+const doiURL = d => d ? `https://doi.org/${encodeURIComponent(d)}` : '';
+const mrLookup = d => d ? `https://mathscinet.ams.org/mathscinet/relay?mr=Lookup&url=https://mathscinet.ams.org/mathscinet/search/publications.html?pg1=DOI&s1=${encodeURIComponent(d)}` : '';
+const yearOf = e => e.year || (e.date && e.date.match(/\d{4}/)?.[0]) || '';
 
 const header = `<!doctype html>
 <html lang="en"><head>
@@ -42,14 +56,13 @@ const header = `<!doctype html>
 </nav></header>
 <main>
   <h1>Published papers</h1>
-  <p>This page is generated automatically from zbMATH Open (author: ${esc(AUTHOR)}).</p>
-  <div id="papers" class="card">
-`;
+  <p>This page is generated from a BibTeX export of my zbMATH author profile.</p>
+  <div id="papers" class="card">`;
 
 const footer = `
   </div>
   <p style="font-size:.95em;color:#57606a;margin-top:1rem">
-    Data source: zbMATH Open · Query: au:"${esc(AUTHOR)}"
+    Source: zbMATH Open (manual BibTeX export)
   </p>
 </main>
 <footer>© <span id="y"></span> Antonio Laface</footer>
@@ -58,44 +71,44 @@ const footer = `
 
 (async () => {
   try {
-    const r = await fetch(ZB_URL, { headers: { 'User-Agent': 'alaface-pages/1.0 (mailto:alaface@udec.cl)' } });
-    if (!r.ok) throw new Error(`zbMATH HTTP ${r.status}`);
-    const data = await r.json();
-    const raw = data?.data || data?.hits || data?.documents || data?.items || [];
-    const items = raw.filter(it => includesExactZbName(it.authors || it.author || it.au));
+    const bib = await fs.readFile(BIB_PATH, 'utf8');
+    let items = parseBibtex(bib);
 
-    const html = items.map(it => {
-      const title = it.title || (Array.isArray(it.ti) ? it.ti[0] : '(untitled)');
-      const yr = yearOf(it);
-      const list = it.authors || it.author || it.au || [];
-      const authors = list.map(a => typeof a === 'string' ? a : (a.name || [a.first, a.last].filter(Boolean).join(' '))).join(', ');
-      const journal = it.journal?.title || it.journal_title || it.journal || '';
-      const vol = it.volume || it.vol || '';
-      const issue = it.issue || it.no || '';
-      const page = it.pages || it.page || '';
-      const citeTail = [vol && ` ${esc(vol)}`, issue && `(${esc(issue)})`, page && `:${esc(page)}`].filter(Boolean).join('');
-      const doi = it.doi || (Array.isArray(it.dois) ? it.dois[0] : '');
-      const url = doiURL(doi) || it.url || it.link || zbDocURL(it.id || it.an);
+    // keep only entries with you as author to be safe
+    items = items.filter(e => (e.author || '').toLowerCase().includes('laface'));
+
+    // sort by year desc
+    items.sort((a,b) => (parseInt(yearOf(b))||0) - (parseInt(yearOf(a))||0));
+
+    const html = items.map(e => {
+      const title = e.title || '(untitled)';
+      const authors = e.author || '';
+      const journal = e.journal || e.booktitle || '';
+      const vol = e.volume ? ` ${e.volume}` : '';
+      const no = e.number ? `(${e.number})` : '';
+      const pp = e.pages ? `:${e.pages}` : '';
+      const yr = yearOf(e);
+      const doi = e.doi || '';
+      const url = e.url || doiURL(doi);
 
       return `
         <div class="card">
-          <h3 style="margin-top:0"><a href="${esc(url)}" target="_blank" rel="noopener">${esc(title)}</a></h3>
+          <h3 style="margin-top:0">${url ? `<a href="${esc(url)}" target="_blank" rel="noopener">` : ''}${esc(title)}${url ? '</a>' : ''}</h3>
           <p><strong>Authors:</strong> ${esc(authors)}</p>
-          <p><strong>Journal:</strong> ${esc(journal)}${citeTail ? esc(citeTail) : ''}${yr ? ` · <strong>Year:</strong> ${esc(String(yr))}` : ''}</p>
+          <p><strong>Journal:</strong> ${esc(journal)}${esc(vol)}${esc(no)}${esc(pp)}${yr ? ` · <strong>Year:</strong> ${esc(yr)}` : ''}</p>
           <p>
             ${doi ? `DOI: <a href="${esc(doiURL(doi))}" target="_blank" rel="noopener">${esc(doi)}</a>` : ''}
             ${doi ? ` · <a href="${esc(mrLookup(doi))}" target="_blank" rel="noopener">MR lookup</a>` : ''}
-            ${it.an ? ` · <a href="${esc(zbDocURL(it.an))}" target="_blank" rel="noopener">zbMATH</a>` : ''}
           </p>
         </div>`;
-    }).join('') || '<p>No records found via zbMATH.</p>';
+    }).join('') || '<p>No records found in papers.bib.</p>';
 
     await fs.mkdir('papers', { recursive: true });
     await fs.writeFile('papers/index.html', header + html + footer, 'utf8');
-    console.log(`Generated papers/index.html with ${items.length} entries (zbMATH).`);
+    console.log(`Generated papers/index.html with ${items.length} entries from BibTeX.`);
   } catch (e) {
     console.error('Build failed:', e);
-    const fallback = `<p>Failed to fetch zbMATH right now. Please try again later.</p>`;
+    const fallback = `<p>Could not read ${BIB_PATH}. Make sure you uploaded a BibTeX export from zbMATH.</p>`;
     await fs.mkdir('papers', { recursive: true });
     await fs.writeFile('papers/index.html', header + fallback + footer, 'utf8');
     process.exitCode = 0;
