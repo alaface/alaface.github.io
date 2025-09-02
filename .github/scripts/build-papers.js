@@ -4,7 +4,7 @@ import fs from 'node:fs/promises';
 
 const ORCID = '0000-0001-6926-8249';
 const ROWS = 200;
-const CROSSREF_URL = `https://api.crossref.org/works?filter=orcid:${encodeURIComponent(ORCID)}&rows=${ROWS}&sort=issued&order=desc&select=title,author,DOI,URL,issued,container-title,volume,issue,page`;
+const CROSSREF_URL = `https://api.crossref.org/works?query.author=Antonio%20Laface&rows=${ROWS}&sort=issued&order=desc&select=title,author,DOI,URL,issued,container-title,volume,issue,page`;
 
 function esc(s=''){ return s.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m])); }
 function yearOf(it){ return it?.issued?.['date-parts']?.[0]?.[0] || ''; }
