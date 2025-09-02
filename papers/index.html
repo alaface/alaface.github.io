@@ -1,11 +1,114 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Papers — A. Laface</title><link rel="stylesheet" href="../assets/css/style.css"></head>
-<body><header><nav><a class="brand" href="../">Antonio&nbsp;Laface</a><a href="./">Papers</a><a href="../arxiv/">arXiv</a><a href="../software/">Software</a><a href="../notes/">Lecture notes</a><a href="../book/">Book</a></nav></header>
-<main><h1>Papers</h1>
-<p>You can maintain this list manually (simple and robust) or link to ORCID/MathSciNet.</p>
-<ul>
-  <li>Example entry — Replace with your publications.</li>
-</ul>
-</main><footer>© <span id="y"></span> Antonio Laface</footer>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Papers — A. Laface</title>
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+<header>
+  <nav>
+    <a class="brand" href="../">Antonio&nbsp;Laface</a>
+    <a href="./">Papers</a>
+    <a href="../arxiv/">arXiv</a>
+    <a href="../software/">Software</a>
+    <a href="../notes/">Lecture notes</a>
+    <a href="../book/">Book</a>
+  </nav>
+</header>
+
+<main>
+  <h1>Published papers</h1>
+  <p>This list is fetched live from the zbMATH Open REST API.</p>
+
+  <div id="papers" class="card"><p>Loading…</p></div>
+
+  <p style="font-size:.95em;color:#57606a;margin-top:1rem">
+    Source: <a href="https://api.zbmath.org/" target="_blank" rel="noopener">zbMATH Open API</a>.
+    If the API is temporarily unavailable or rate-limited, a fallback link to my zbMATH author page will be shown.
+  </p>
+</main>
+
+<footer>© <span id="y"></span> Antonio Laface</footer>
 <script>document.getElementById('y').textContent = new Date().getFullYear();</script>
-</body></html>
+
+<script>
+// ---------------- Settings ----------------
+const AUTHOR_CANONICAL = 'Laface, Antonio';             // zbMATH author format
+const SIZE = 200;                                       // how many items to fetch
+// Query: by author, newest first. (Common fields: q, size, from/offset, sort)
+const params = new URLSearchParams({
+  q: `au:"${AUTHOR_CANONICAL}"`,
+  size: String(SIZE),
+  sort: 'year.desc'
+});
+const ZB_URL = `https://api.zbmath.org/v1/document?${params.toString()}`;
+
+// ---------------- Utilities ----------------
+const esc = s => s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const yearOf = it => it.year || (it.published && it.published.year) || '';
+const titleOf = it => it.title || (Array.isArray(it.ti) ? it.ti[0] : '') || '(untitled)';
+const journalOf = it => it.journal || it.journal_title || (it.journal && it.journal.title) || '';
+const doiURL = doi => doi ? `https://doi.org/${encodeURIComponent(doi)}` : '';
+const zbDocURL = id => id ? `https://zbmath.org/?q=an:${encodeURIComponent(id)}` : ''; // fallback to zbMATH HTML
+
+// ---------------- Fetch & render ----------------
+fetch(ZB_URL, { method: 'GET' })
+  .then(r => r.json())
+  .then(data => {
+    // API returns an object with 'data'/'hits' or similar; be defensive:
+    const items = data?.data || data?.hits || data?.documents || data?.items || [];
+    if (!Array.isArray(items) || items.length === 0) {
+      document.getElementById('papers').innerHTML = `<p>No records found.</p>`;
+      return;
+    }
+
+    const html = items.map(it => {
+      const title = titleOf(it);
+      const yr = yearOf(it);
+      // authors: often array of {name:"Surname, Given"} or {first, last}
+      const authors = (it.authors || it.author || it.au || [])
+        .map(a => typeof a === 'string'
+            ? a
+            : (a.name || [a.first, a.last].filter(Boolean).join(' ') || [a.given, a.family].filter(Boolean).join(' '))
+        ).filter(Boolean).join(', ');
+
+      const journal = journalOf(it);
+      const vol = it.volume || it.vol || '';
+      const issue = it.issue || it.no || '';
+      const page = it.pages || it.page || '';
+      const citeTail = [vol && ` ${esc(String(vol))}`, issue && `(${esc(String(issue))})`, page && `:${esc(String(page))}`]
+                       .filter(Boolean).join('');
+
+      const doi = it.doi || (Array.isArray(it.dois) ? it.dois[0] : '');
+      const url = it.url || it.link || doiURL(doi) || zbDocURL(it.id || it.an);
+
+      const mr = it.mr || it.mrnumber || '';
+      const mrLookup = doi ? `https://mathscinet.ams.org/mathscinet/relay?mr=Lookup&url=https://mathscinet.ams.org/mathscinet/search/publications.html?pg1=DOI&s1=${encodeURIComponent(doi)}` : '';
+
+      return `
+        <div class="card">
+          <h3 style="margin-top:0"><a href="${esc(url)}" target="_blank" rel="noopener">${esc(title)}</a></h3>
+          <p><strong>Authors:</strong> ${esc(authors)}</p>
+          <p><strong>Journal:</strong> ${esc(journal)}${citeTail ? esc(citeTail) : ''}${yr ? ` · <strong>Year:</strong> ${esc(String(yr))}` : ''}</p>
+          <p>
+            ${doi ? `DOI: <a href="${esc(doiURL(doi))}" target="_blank" rel="noopener">${esc(doi)}</a>` : ''}
+            ${mr ? ` · MR: ${esc(mr)}` : ''}
+            ${mrLookup ? ` · <a href="${esc(mrLookup)}" target="_blank" rel="noopener">MR lookup</a>` : ''}
+          </p>
+        </div>`;
+    }).join('');
+
+    document.getElementById('papers').innerHTML = html;
+  })
+  .catch(err => {
+    console.error(err);
+    document.getElementById('papers').innerHTML =
+      `<p>zbMATH API unreachable right now. See my author page on zbMATH:
+         <a href="https://zbmath.org/authors/?q=au%3A%22Laface%2C%20Antonio%22" target="_blank" rel="noopener">au:"Laface, Antonio"</a>.
+       </p>`;
+  });
+</script>
+</body>
+</html>
