@@ -1,11 +1,84 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>arXiv — A. Laface</title><link rel="stylesheet" href="../assets/css/style.css"></head>
-<body><header><nav><a class="brand" href="../">Antonio&nbsp;Laface</a><a href="../papers/">Papers</a><a href="./">arXiv</a><a href="../software/">Software</a><a href="../notes/">Lecture notes</a><a href="../book/">Book</a></nav></header>
-<main><h1>arXiv</h1>
-<p>Link to your arXiv author page or list preprints here.</p>
-<ul>
-  <li><a href="https://arxiv.org/search/math?searchtype=author&query=Laface%2C+A">Author page on arXiv</a></li>
-</ul>
-</main><footer>© <span id="y"></span> Antonio Laface</footer>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>arXiv — A. Laface</title>
+  <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+<header>
+  <nav>
+    <a class="brand" href="../">Antonio&nbsp;Laface</a>
+    <a href="../papers/">Papers</a>
+    <a href="./">arXiv</a>
+    <a href="../software/">Software</a>
+    <a href="../notes/">Lecture notes</a>
+    <a href="../book/">Book</a>
+  </nav>
+</header>
+
+<main>
+  <h1>Preprints on arXiv</h1>
+  <p>This page lists my recent arXiv submissions (fetched live from arXiv).</p>
+
+  <div id="arxiv-list" class="card">
+    <p>Loading…</p>
+  </div>
+</main>
+
+<footer>© <span id="y"></span> Antonio Laface</footer>
 <script>document.getElementById('y').textContent = new Date().getFullYear();</script>
-</body></html>
+
+<script>
+// --- Settings ---
+const author = "Antonio Laface";      // your name as it appears on arXiv
+const maxResults = 50;                // how many items to load
+const query = `search_query=au:${encodeURIComponent(author)}&sortBy=submittedDate&sortOrder=descending&max_results=${maxResults}`;
+const url = `https://export.arxiv.org/api/query?${query}`;
+
+// --- Utilities ---
+function esc(s){ return s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+// --- Fetch and render ---
+fetch(url)
+  .then(r => r.text())
+  .then(text => {
+    const xml = new window.DOMParser().parseFromString(text, "application/xml");
+    const entries = Array.from(xml.getElementsByTagName("entry"));
+    const container = document.getElementById("arxiv-list");
+    if (!entries.length) { container.innerHTML = "<p>No results found.</p>"; return; }
+
+    const items = entries.map(e => {
+      const title = e.getElementsByTagName("title")[0]?.textContent.trim() || "(no title)";
+      const summary = e.getElementsByTagName("summary")[0]?.textContent.trim() || "";
+      const updated = e.getElementsByTagName("updated")[0]?.textContent.slice(0,10) || "";
+      const id = e.getElementsByTagName("id")[0]?.textContent || "";
+      const authors = Array.from(e.getElementsByTagName("author")).map(a => a.getElementsByTagName("name")[0].textContent);
+
+      // link to PDF (rel="related") or construct from id
+      let pdf = "";
+      const links = Array.from(e.getElementsByTagName("link"));
+      const pdfLink = links.find(l => l.getAttribute("type")==="application/pdf");
+      if (pdfLink) pdf = pdfLink.getAttribute("href");
+      else if (id.includes("/abs/")) pdf = id.replace("/abs/","/pdf/") + ".pdf";
+
+      return `
+        <div class="card">
+          <h3 style="margin-top:0;"><a href="${esc(id)}" target="_blank" rel="noopener">${esc(title)}</a></h3>
+          <p><strong>Authors:</strong> ${authors.map(esc).join(", ")}</p>
+          <p><strong>Date:</strong> ${esc(updated)} · ${pdf ? `<a href="${esc(pdf)}" target="_blank" rel="noopener">PDF</a>` : ""}</p>
+          <p>${esc(summary)}</p>
+        </div>`;
+    }).join("");
+
+    container.innerHTML = items;
+  })
+  .catch(err => {
+    document.getElementById("arxiv-list").innerHTML =
+      `<p>Failed to load arXiv feed. You can still visit <a href="https://arxiv.org/search/?searchtype=author&query=${encodeURIComponent(author)}" target="_blank" rel="noopener">my author page</a>.</p>`;
+    console.error(err);
+  });
+</script>
+</body>
+</html>
