@@ -20,12 +20,10 @@
 
 <main>
   <h1>Published papers</h1>
-  <p>This list is fetched live from the public Crossref API. For MathSciNet details, use the MR link beside each item.</p>
-
+  <p>This page first tries the zbMATH Open API; if unavailable, it falls back to Crossref.</p>
   <div id="papers" class="card"><p>Loading…</p></div>
-
   <p style="font-size:.95em;color:#57606a;margin-top:1rem">
-    Data source: Crossref. If something is missing or misattributed, tell me and I’ll fix the filters.
+    Data sources: zbMATH Open (preferred), Crossref (fallback). MathSciNet/MR links are provided when a DOI is available.
   </p>
 </main>
 
@@ -33,79 +31,84 @@
 <script>document.getElementById('y').textContent = new Date().getFullYear();</script>
 
 <script>
-// ---------- Settings ----------
-const AUTHOR_FULL = "Antonio Laface";                  // exact author string for client-side filtering
-const ROWS = 200;                                      // max items to fetch
-// Crossref query: author + sort by issued desc; select only fields we need to keep the payload small.
-const crossrefURL = `https://api.crossref.org/works?query.author=${encodeURIComponent(AUTHOR_FULL)}&rows=${ROWS}&sort=issued&order=desc&select=title,author,DOI,URL,issued,container-title,volume,issue,page`;
+const AUTHOR_CANONICAL = 'Laface, Antonio';     // zbMATH format
+const AUTHOR_FULL = 'Antonio Laface';           // Crossref format
+const SIZE = 200;
 
-// ---------- Utils ----------
-const esc = s => s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const yearOf = issued => (issued && issued['date-parts'] && issued['date-parts'][0] && issued['date-parts'][0][0]) || "";
+const esc = s => (s||"").toString().replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const yearOf = it => it.year || it?.issued?.['date-parts']?.[0]?.[0] || '';
+const doiURL = doi => doi ? `https://doi.org/${encodeURIComponent(doi)}` : '';
+const mrLookup = doi => doi ? `https://mathscinet.ams.org/mathscinet/relay?mr=Lookup&url=https://mathscinet.ams.org/mathscinet/search/publications.html?pg1=DOI&s1=${encodeURIComponent(doi)}` : '';
+const zbDocURL = id => id ? `https://zbmath.org/?q=an:${encodeURIComponent(id)}` : '';
+const zbAuthorPage = `https://zbmath.org/authors/?q=au%3A%22${encodeURIComponent(AUTHOR_CANONICAL)}%22`;
 
-// normalize “Antonio Laface” match among authors returned by Crossref
-function hasAuthorMatch(list) {
-  if (!Array.isArray(list)) return false;
-  return list.some(a => {
-    const given = (a.given || "").trim().toLowerCase();
-    const family = (a.family || "").trim().toLowerCase();
-    const full = (given + " " + family).trim();
-    return full === AUTHOR_FULL.toLowerCase();
-  });
+function render(items, source){
+  if (!items?.length) {
+    document.getElementById('papers').innerHTML = `<p>No records found.</p>`;
+    return;
+  }
+  const html = items.map(it => {
+    // Normalize fields for either source
+    const title = it.title || it.ti || (Array.isArray(it.titleArr)?it.titleArr[0]:"") || (Array.isArray(it.title)?it.title[0]:"") || "(untitled)";
+    const yr = yearOf(it);
+    let authors = "";
+    if (source === 'zb') {
+      const list = it.authors || it.author || it.au || [];
+      authors = list.map(a => typeof a === 'string' ? a : (a.name || [a.first,a.last].filter(Boolean).join(' '))).join(', ');
+    } else { // crossref
+      authors = (it.author || []).map(a => [a.given,a.family].filter(Boolean).join(' ')).join(', ');
+    }
+    const journal = it.journal || it.journal_title || it?.containerTitle || (it['container-title']?.[0]) || '';
+    const vol = it.volume || it.vol || '';
+    const issue = it.issue || it.no || it['journal-issue']?.issue || '';
+    const page = it.pages || it.page || '';
+    const citeTail = [vol && ` ${esc(vol)}`, issue && `(${esc(issue)})`, page && `:${esc(page)}`].filter(Boolean).join('');
+    const doi = it.doi || (Array.isArray(it.dois)?it.dois[0]:it.DOI) || '';
+    const url = it.url || it.link || it.URL || doiURL(doi) || zbDocURL(it.id || it.an);
+
+    return `
+      <div class="card">
+        <h3 style="margin-top:0"><a href="${esc(url)}" target="_blank" rel="noopener">${esc(title)}</a></h3>
+        <p><strong>Authors:</strong> ${esc(authors)}</p>
+        <p><strong>Journal:</strong> ${esc(journal)}${citeTail ? esc(citeTail) : ''}${yr ? ` · <strong>Year:</strong> ${esc(String(yr))}` : ''}</p>
+        <p>
+          ${doi ? `DOI: <a href="${esc(doiURL(doi))}" target="_blank" rel="noopener">${esc(doi)}</a>` : ''}
+          ${doi ? ` · <a href="${esc(mrLookup(doi))}" target="_blank" rel="noopener">MR lookup</a>` : ''}
+          ${source==='crossref' && (it.an || it.id) ? ` · <a href="${esc(zbDocURL(it.an||it.id))}" target="_blank" rel="noopener">zbMATH</a>` : ''}
+        </p>
+      </div>`;
+  }).join('');
+  document.getElementById('papers').innerHTML = html;
 }
 
-// link to MathSciNet “MR Lookup” (works best when a DOI exists)
-function mrLookupLink(doi) {
-  if (!doi) return "";
-  // We don't embed MathSciNet; we just provide a convenient outbound link.
-  const q = encodeURIComponent(doi);
-  return `https://mathscinet.ams.org/mathscinet/relay?mr=Lookup&url=https://mathscinet.ams.org/mathscinet/search/publications.html?pg1=DOI&s1=${q}`;
-}
+// ---- Try zbMATH first ----
+(async function(){
+  const params = new URLSearchParams({ q: `au:"${AUTHOR_CANONICAL}"`, size: String(SIZE), sort: 'year.desc' });
+  const ZB_URL = `https://api.zbmath.org/v1/document?${params.toString()}`;
 
-// ---------- Fetch & render ----------
-fetch(crossrefURL)
-  .then(r => r.json())
-  .then(data => {
-    const items = (data.message && data.message.items) || [];
-    // Keep only entries where “Antonio Laface” is clearly an author
-    const mine = items.filter(it => hasAuthorMatch(it.author));
-
-    // Build HTML
-    const html = mine.map(it => {
-      const title = (it.title && it.title[0]) ? it.title[0] : "(untitled)";
-      const journal = (it["container-title"] && it["container-title"][0]) ? it["container-title"][0] : "";
-      const yr = yearOf(it.issued);
-      const vol = it.volume ? ` ${esc(it.volume)}` : "";
-      const no = it.issue ? `(${esc(it.issue)})` : "";
-      const pp = it.page ? `:${esc(it.page)}` : "";
-      const cite = [journal, (vol || no || pp) ? `${vol}${no}${pp}` : ""].filter(Boolean).join(", ");
-      const doi = it.DOI || "";
-      const url = it.URL || (doi ? `https://doi.org/${doi}` : "");
-
-      const mrURL = mrLookupLink(doi);
-      const authors = Array.isArray(it.author) ? it.author.map(a => esc([a.given, a.family].filter(Boolean).join(" "))).join(", ") : "";
-
-      return `
-        <div class="card">
-          <h3 style="margin-top:0">
-            <a href="${esc(url)}" target="_blank" rel="noopener">${esc(title)}</a>
-          </h3>
-          <p><strong>Authors:</strong> ${authors}</p>
-          <p><strong>Journal:</strong> ${esc(cite)} ${yr ? `· <strong>Year:</strong> ${esc(String(yr))}` : ""}</p>
-          <p>
-            ${doi ? `DOI: <a href="https://doi.org/${esc(doi)}" target="_blank" rel="noopener">${esc(doi)}</a>` : ""}
-            ${mrURL ? ` · <a href="${esc(mrURL)}" target="_blank" rel="noopener">MR lookup</a>` : ""}
-          </p>
-        </div>`;
-    }).join("") || "<p>No records found (via Crossref).</p>";
-
-    document.getElementById("papers").innerHTML = html;
-  })
-  .catch(err => {
-    console.error(err);
-    document.getElementById("papers").innerHTML =
-      `<p>Failed to load from Crossref. You can visit my <a href="https://api.crossref.org/works?query.author=${encodeURIComponent(AUTHOR_FULL)}" target="_blank" rel="noopener">Crossref author search</a> or my <a href="https://www.ams.org/mathscinet" target="_blank" rel="noopener">MathSciNet profile</a> (subscription required).</p>`;
-  });
+  try {
+    const r = await fetch(ZB_URL, { method: 'GET' });
+    if (!r.ok) throw new Error('zbMATH HTTP '+r.status);
+    const data = await r.json();
+    const items = data?.data || data?.hits || data?.documents || data?.items || [];
+    if (Array.isArray(items) && items.length) { render(items, 'zb'); return; }
+    throw new Error('zbMATH empty');
+  } catch (e) {
+    // Fallback to Crossref
+    const crossrefURL = `https://api.crossref.org/works?query.author=${encodeURIComponent(AUTHOR_FULL)}&rows=${SIZE}&sort=issued&order=desc&select=title,author,DOI,URL,issued,container-title,volume,issue,page`;
+    try {
+      const r2 = await fetch(crossrefURL);
+      const j = await r2.json();
+      const items = j?.message?.items || [];
+      render(items, 'crossref');
+    } catch (e2) {
+      document.getElementById('papers').innerHTML =
+        `<p>Both zbMATH and Crossref are currently unreachable. You can still visit my zbMATH author page:
+          <a href="${zbAuthorPage}" target="_blank" rel="noopener">${esc(AUTHOR_CANONICAL)}</a>.
+        </p>`;
+    }
+  }
+})();
 </script>
 </body>
 </html>
