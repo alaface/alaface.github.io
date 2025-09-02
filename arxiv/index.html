@@ -20,7 +20,7 @@
 
 <main>
   <h1>Preprints on arXiv</h1>
-  <p>This page lists my recent arXiv submissions (fetched live from arXiv).</p>
+  <p>This page automatically lists my recent arXiv submissions.</p>
 
   <div id="arxiv-list" class="card">
     <p>Loading…</p>
@@ -32,8 +32,8 @@
 
 <script>
 // --- Settings ---
-const author = "Antonio Laface";      // your name as it appears on arXiv
-const maxResults = 50;                // how many items to load
+const author = "Antonio Laface";      // exact name to search on arXiv
+const maxResults = 50;
 const query = `search_query=au:${encodeURIComponent(author)}&sortBy=submittedDate&sortOrder=descending&max_results=${maxResults}`;
 const url = `https://export.arxiv.org/api/query?${query}`;
 
