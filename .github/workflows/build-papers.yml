@@ -1,0 +1,33 @@
+name: Build Papers
+
+on:
+  push:
+    branches: [ main ]
+  schedule:
+    - cron: "17 3 * * 1"   # ogni lunedì 03:17 UTC (cambia se vuoi)
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Generate papers/index.html from Crossref
+        run: node .github/scripts/build-papers.js
+
+      - name: Commit changes
+        uses: EndBug/add-and-commit@v9
+        with:
+          add: "papers/index.html"
+          message: "chore: update papers from Crossref (ORCID)"
+          default_author: github_actions
