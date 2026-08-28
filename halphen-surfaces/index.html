@@ -4,46 +4,203 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Extremal Halphen Surfaces — Explicit Plane Catalogue</title>
-<meta name="description" content="Searchable catalogue of explicit plane models of extremal Halphen surfaces">
+<meta name="description" content="Searchable catalogue of 26 explicit plane models of extremal Halphen surfaces">
 <script>
-window.MathJax={tex:{inlineMath:[['\\(','\\)'],['$','$']],displayMath:[['\\[','\\]'],['$$','$$']],processEscapes:true},options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}};
+window.MathJax={
+  tex:{inlineMath:[['\\(','\\)'],['$','$']],displayMath:[['\\[','\\]'],['$$','$$']],processEscapes:true},
+  options:{skipHtmlTags:['script','noscript','style','textarea','pre','code']}
+};
 </script>
 <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
 <style>
-:root{--ink:#17202a;--muted:#64748b;--line:#dfe5ea;--wash:#f7f9fb;--accent:#315f83;--max:1220px}*{box-sizing:border-box}body{margin:0;color:var(--ink);background:#fff;font:15px/1.58 system-ui,-apple-system,"Segoe UI",sans-serif}header{border-bottom:1px solid var(--line);background:#fafbfc}nav,main,footer{max-width:var(--max);margin:auto;padding-left:22px;padding-right:22px}nav{padding-top:13px;padding-bottom:13px;display:flex;gap:18px;flex-wrap:wrap}nav a{text-decoration:none;color:#52606d}nav .brand{font-weight:700;color:var(--ink);margin-right:auto}main{padding-top:58px;padding-bottom:60px}.ey{font-size:11px;text-transform:uppercase;letter-spacing:.11em;color:var(--muted)}h1,h2,h3{font-family:Georgia,"Times New Roman",serif;font-weight:500;line-height:1.17}h1{font-size:clamp(42px,7vw,76px);letter-spacing:-.03em;margin:7px 0 7px}.lead{font:21px/1.45 Georgia,"Times New Roman",serif;color:#536273;margin:0 0 34px}.stats{display:flex;gap:42px;border-bottom:1px solid var(--line);padding-bottom:28px;margin-bottom:32px}.stats strong{display:block;font:30px Georgia,serif}.stats span{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}.note{border:1px solid var(--line);border-radius:12px;background:#fbfcfd;padding:17px 20px;margin-bottom:35px}.note p{margin:.4em 0}.filters{display:grid;grid-template-columns:2fr repeat(3,1fr) auto;gap:10px;margin:14px 0;padding:14px;background:var(--wash);border-radius:11px}.filters input,.filters select,.filters button{font:inherit;border:1px solid #ccd4dc;border-radius:8px;background:#fff;padding:10px}.filters button{cursor:pointer}.resultmeta{color:var(--muted);margin:10px 2px}.wrap{overflow:auto;border:1px solid var(--line);border-radius:11px}table{width:100%;border-collapse:collapse;min-width:820px}th,td{padding:11px 12px;border-bottom:1px solid #e9edf0;text-align:left;vertical-align:middle}th{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);background:#fafbfc}tbody tr{cursor:pointer}tbody tr:hover{background:#f7fafc}.group-start td{border-top:1px solid #cfd7df}.grouped{vertical-align:middle;background:#fbfcfd}.root{font-family:Georgia,serif;font-size:16px}.index-cell{text-align:center}.index{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:50%;background:#eaf0f5;color:#294a63;font-weight:700}.empty{padding:30px;color:var(--muted);text-align:center}dialog{border:0;border-radius:14px;padding:0;box-shadow:0 18px 55px #0003;width:min(1040px,95vw);max-height:94vh}dialog::backdrop{background:#0006}.dialog{padding:0 30px 34px}.top{position:sticky;top:0;background:linear-gradient(#fff 75%,#fff0);height:52px;display:flex;justify-content:flex-end;z-index:3}.close{margin-top:10px;width:34px;height:34px;border:0;border-radius:50%;font-size:22px;background:#eef2f5;cursor:pointer}.title{border-bottom:1px solid var(--line);padding-bottom:16px}.title h2{font-size:clamp(30px,4vw,48px);margin:5px 0}.source{font-size:13px;color:var(--muted)}.meta{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin:16px 0 22px}.meta>div{border:1px solid var(--line);border-radius:9px;padding:9px;background:#fbfcfd}.meta small{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}.meta strong{font-weight:600}.detail{border-top:1px solid var(--line);padding:22px 0}.detail h3{margin:0 0 11px;font-size:21px}.latex{white-space:normal;overflow-wrap:normal}.latex mjx-container[jax="CHTML"][display="true"]{overflow-x:auto;overflow-y:hidden;padding:4px 0}.matrix-box{overflow-x:auto;border:1px solid var(--line);border-radius:10px;padding:14px 8px;background:#fbfcfd}.matrix-box mjx-container{font-size:100%!important}.matrix-note{font-size:13px;color:var(--muted);margin:8px 0 0}footer{border-top:1px solid var(--line);padding-top:22px;padding-bottom:35px;color:var(--muted);font-size:13px}@media(max-width:850px){.filters{grid-template-columns:1fr 1fr}.filters input{grid-column:1/-1}.meta{grid-template-columns:repeat(3,1fr)}}@media(max-width:560px){nav,main,footer{padding-left:14px;padding-right:14px}.filters{grid-template-columns:1fr}.filters input{grid-column:auto}.dialog{padding-left:16px;padding-right:16px}.meta{grid-template-columns:1fr 1fr}.stats{gap:24px}}
+:root{--ink:#17202a;--muted:#64748b;--line:#dfe5ea;--wash:#f7f9fb;--accent:#315f83;--max:1240px}
+*{box-sizing:border-box}
+body{margin:0;color:var(--ink);background:#fff;font:15px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif}
+header{border-bottom:1px solid var(--line);background:#fafbfc}
+nav,main,footer{max-width:var(--max);margin:auto;padding-left:22px;padding-right:22px}
+nav{padding-top:13px;padding-bottom:13px;display:flex;gap:18px;flex-wrap:wrap}
+nav a{text-decoration:none;color:#52606d}.brand{font-weight:700;color:var(--ink)!important;margin-right:auto}
+main{padding-top:58px;padding-bottom:62px}
+.ey{font-size:11px;text-transform:uppercase;letter-spacing:.11em;color:var(--muted)}
+h1,h2,h3{font-family:Georgia,"Times New Roman",serif;font-weight:500;line-height:1.18}
+h1{font-size:clamp(42px,7vw,76px);letter-spacing:-.03em;margin:7px 0}
+h2{font-size:29px;margin:0 0 12px} h3{font-size:21px;margin:0 0 12px}
+.lead{font:21px/1.45 Georgia,"Times New Roman",serif;color:#536273;margin:0 0 34px}
+.stats{display:flex;gap:42px;border-bottom:1px solid var(--line);padding-bottom:28px;margin-bottom:30px}
+.stats strong{display:block;font:30px Georgia,serif}.stats span{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.note{border:1px solid var(--line);border-radius:12px;background:#fbfcfd;padding:17px 20px;margin-bottom:34px}
+.note p{margin:.45em 0}.notation{margin-top:10px;padding-top:10px;border-top:1px solid #edf0f2}
+.filters{display:grid;grid-template-columns:2fr repeat(3,1fr) auto;gap:10px;margin:14px 0;padding:14px;background:var(--wash);border-radius:11px}
+.filters input,.filters select,.filters button{font:inherit;border:1px solid #ccd4dc;border-radius:8px;background:#fff;padding:10px}
+.filters button{cursor:pointer}.resultmeta{color:var(--muted);margin:10px 2px}
+.wrap{overflow:auto;border:1px solid var(--line);border-radius:11px}
+table.catalogue{width:100%;border-collapse:collapse;min-width:900px}
+table.catalogue th,table.catalogue td{padding:11px 12px;border-bottom:1px solid #e9edf0;text-align:left;vertical-align:middle}
+table.catalogue th{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);background:#fafbfc}
+table.catalogue tbody tr{cursor:pointer}table.catalogue tbody tr:hover{background:#f7fafc}
+.group-start td{border-top:1px solid #cfd7df}.grouped{vertical-align:middle;background:#fbfcfd}.root{font-family:Georgia,serif;font-size:16px}.index-cell{text-align:center}.surface{font-family:Georgia,serif;font-size:16px}.index{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:50%;background:#eaf0f5;color:#294a63;font-weight:700}
+.empty{padding:30px;color:var(--muted);text-align:center}
+dialog{border:0;border-radius:14px;padding:0;box-shadow:0 18px 55px #0003;width:min(1080px,95vw);max-height:94vh}
+dialog::backdrop{background:#0006}.dialog{padding:0 30px 34px}
+.top{position:sticky;top:0;background:linear-gradient(#fff 75%,#fff0);height:52px;display:flex;justify-content:flex-end;z-index:3}
+.close{margin-top:10px;width:34px;height:34px;border:0;border-radius:50%;font-size:22px;background:#eef2f5;cursor:pointer}
+.title{border-bottom:1px solid var(--line);padding-bottom:16px}.title h2{font-size:clamp(30px,4vw,48px);margin:5px 0}
+.source{font-size:13px;color:var(--muted)}
+.meta{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:16px 0 24px}
+.meta>div{border:1px solid var(--line);border-radius:9px;padding:9px;background:#fbfcfd;min-width:0}
+.meta small{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}
+.meta strong{font-weight:600;overflow-wrap:anywhere}
+.detail{border-top:1px solid var(--line);padding:23px 0}
+.latex{white-space:normal;overflow-wrap:normal}
+.latex mjx-container[jax="CHTML"][display="true"]{overflow-x:auto;overflow-y:hidden;padding:5px 0}
+.matrix-wrap{overflow:auto;border:1px solid var(--line);border-radius:10px;background:#fbfcfd;padding:10px}
+table.matrix{border-collapse:collapse;margin:auto;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:14px}
+table.matrix th,table.matrix td{padding:5px 9px;text-align:right;border-right:1px solid #e5e9ed;border-bottom:1px solid #e8ecef}
+table.matrix th{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;font-weight:600;background:#f3f6f8;text-align:center;position:sticky;top:0}
+table.matrix td:first-child,table.matrix th:first-child{border-left:1px solid #e5e9ed}
+.matrix-note{font-size:13px;color:var(--muted);margin:9px 0 0}
+.audit-ok{display:inline-block;font-size:12px;padding:3px 7px;border:1px solid #cfd8df;border-radius:999px;background:#f7fafc;color:#496273}
+footer{border-top:1px solid var(--line);padding-top:22px;padding-bottom:35px;color:var(--muted);font-size:13px}
+@media(max-width:900px){.filters{grid-template-columns:1fr 1fr}.filters input{grid-column:1/-1}.meta{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){nav,main,footer{padding-left:14px;padding-right:14px}.filters{grid-template-columns:1fr}.filters input{grid-column:auto}.dialog{padding-left:16px;padding-right:16px}.stats{gap:24px}.meta{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 <header><nav><a class="brand" href="../">Antonio Laface</a><a href="../papers/">Papers</a><a href="../software/">Software</a><a href="../notes/">Lecture notes</a></nav></header>
 <main>
-<div class="ey">Research database</div><h1>Extremal Halphen Surfaces</h1><p class="lead">Explicit plane catalogue of elliptically admissible extension orbits.</p>
+<div class="ey">Research database</div>
+<h1>Extremal Halphen Surfaces</h1>
+<p class="lead">Explicit plane catalogue of elliptically admissible extension orbits.</p>
 <div class="stats"><div><strong id="nmodels">26</strong><span>models</span></div><div><strong>2–6</strong><span>indices</span></div><div><strong id="nroots">12</strong><span>root types</span></div></div>
-<section class="note"><h2>Uniform catalogue convention</h2><p>Every surface is presented in the same order: <b>field and cubic</b>, <b>cluster</b>, <b>infinitely-near data</b>, <b>normal, extension, and verification</b>, and one final <b>class matrix of the (-2)-curves</b>.</p><p>The matrix always has ten columns, corresponding to the ordered basis \((L,E_1,\ldots,E_9)\). Its number of rows is the number of prime \((-2)\)-components in the affine ADE configuration and therefore legitimately varies from one root type to another.</p></section>
+
+<section class="note">
+<h2>Uniform catalogue convention</h2>
+<p>Every one of the 26 entries contains the same five blocks, in the same order: <b>field, parameters, and cubic</b>, <b>ordered cluster</b>, <b>infinitely-near data</b>, <b>normal class, extension, and verification</b>, and <b>classes of the \((-2)\)-curves</b>.</p>
+<p>The class matrix always has ten columns, in the ordered basis \((L,E_1,\ldots,E_9)\). Its number of rows is the number of prime \((-2)\)-components in the affine ADE configuration.</p>
+<div class="notation"><b>Notation.</b>
+\[
+D=dL+e_1E_1+\cdots+e_9E_9,\qquad
+\mathscr G(g_1,\ldots,g_7)=g_1x^2y+g_2x^2z+g_3xy^2+g_4xyz+g_5xz^2+g_6y^2z+g_7yz^2.
+\]
+</div>
+</section>
+
 <h2>Models</h2>
-<div class="filters"><input id="q" type="search" placeholder="Search surface, lattice, group, field, certificate…"><select id="fi"><option value="">All indices</option></select><select id="fr"><option value="">All root types</option></select><select id="fo"><option value="">All extension orbits</option></select><button id="reset">Reset</button></div>
-<div class="resultmeta" id="count"></div><div class="wrap"><table><thead><tr><th>Root type</th><th>Index</th><th>Extension orbit</th><th>Middle group</th><th>Lines</th></tr></thead><tbody id="rows"></tbody></table></div><div class="empty" id="empty" hidden>No models match the current filters.</div>
+<div class="filters">
+<input id="q" type="search" placeholder="Search surface, lattice, group, field, certificate…">
+<select id="fi"><option value="">All indices</option></select>
+<select id="fr"><option value="">All root types</option></select>
+<select id="fo"><option value="">All extension orbits</option></select>
+<button id="reset">Reset</button>
+</div>
+<div class="resultmeta" id="count"></div>
+<div class="wrap">
+<table class="catalogue"><thead><tr>
+<th>Root type</th><th>Index</th><th>Extension orbit</th><th>Middle group</th><th>Components</th><th>Lines</th>
+</tr></thead><tbody id="rows"></tbody></table>
+</div>
+<div class="empty" id="empty" hidden>No models match the current filters.</div>
 </main>
+
 <dialog id="dlg"><article class="dialog"><div class="top"><button class="close" id="close" aria-label="Close">×</button></div><div id="detail"></div></article></dialog>
-<footer>Extremal Halphen Surfaces · explicit plane catalogue</footer>
+<footer>Extremal Halphen Surfaces · source-normalized catalogue · <span class="audit-ok">26/26 source and lattice checks passed</span></footer>
+
 <script>
 (()=>{
 const $=id=>document.getElementById(id),state={surfaces:[]};
-const esc=s=>String(s??'').replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;'}[c]));
 const uniq=a=>[...new Set(a)].sort((x,y)=>String(x).localeCompare(String(y),undefined,{numeric:true}));
-function rootMath(s){let t=String(s).replace(/(\d*)([ADE])(\d+)/g,(_,n,l,k)=>(n||'')+l+'_{'+k+'}');return `\\(${t}\\)`}
-function groupMath(s){let t=String(s).replace(/Z\/(\d+)/g,'\\mathbb{Z}/$1').replace(/\s+\+\s+/g,'\\oplus ');return `\\(${t}\\)`}
-function orbitMath(s){let t=String(s);if(/^xi\s*=/.test(t))return `\\(${t.replace(/^xi/,'\\xi').replace('±','\\pm ')}\\)`;return esc(t)}
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 function typeset(nodes){if(window.MathJax?.typesetPromise)MathJax.typesetPromise(nodes).catch(()=>{})}
-function options(el,vals){for(const v of vals){let o=document.createElement('option');o.value=v;o.textContent=v;el.appendChild(o)}}
-function normalizeBlock(t){t=String(t||'').trim();if(t.startsWith('$\\begin{')&&t.endsWith('$'))return '\\['+t.slice(1,-1)+'\\]';if(t.startsWith('\\(\\begin{')&&t.endsWith('\\)'))return '\\['+t.slice(2,-2)+'\\]';return t}
-function matrixTex(m){const rows=m.map(r=>r.join(' & ')).join(' \\\\ ');return `\\[\\left[\\begin{array}{rrrrrrrrrr}${rows}\\end{array}\\right]\\]`}
-function searchable(s){return [s.plain,s.name_tex,s.root,s.orbit,s.middle,s.extension,s.certificate,...s.display_sections.map(x=>x.tex)].join(' ').toLowerCase()}
-function render(){let q=$('q').value.trim().toLowerCase(),i=$('fi').value,r=$('fr').value,o=$('fo').value;let a=state.surfaces.filter(s=>(!q||searchable(s).includes(q))&&(!i||String(s.index)===i)&&(!r||s.root===r)&&(!o||s.orbit===o));a=[...a].sort((x,y)=>x.index-y.index||x.root.localeCompare(y.root,undefined,{numeric:true}));$('rows').replaceChildren();for(let k=0;k<a.length;){const start=k,root=a[k].root,index=a[k].index;while(k<a.length&&a[k].root===root&&a[k].index===index)k++;const span=k-start;for(let j=start;j<k;j++){const s=a[j],tr=document.createElement('tr');tr.tabIndex=0;if(j===start)tr.classList.add('group-start');tr.innerHTML=`${j===start?`<td class="math root grouped" rowspan="${span}"></td><td class="grouped index-cell" rowspan="${span}"><span class="index">${s.index}</span></td>`:''}<td class="orbit"></td><td class="math group"></td><td>${s.lines}</td>`;if(j===start)tr.querySelector('.root').textContent=rootMath(s.root);tr.querySelector('.orbit').innerHTML=orbitMath(s.orbit);tr.querySelector('.group').textContent=groupMath(s.middle);tr.onclick=()=>openSurface(s);tr.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openSurface(s)}};$('rows').appendChild(tr)}}$('count').textContent=`${a.length} model${a.length===1?'':'s'}`;$('empty').hidden=!!a.length;typeset([$('rows')])}
-function meta(label,val,math=false){return `<div><small>${esc(label)}</small><strong class="${math?'math':''}">${math?val:esc(val||'—')}</strong></div>`}
-function openSurface(s){let w=document.createElement('div');w.innerHTML=`<header class="title"><div class="ey">Catalogue entry</div><h2 id="nm"></h2><div class="source">Source: ${esc(s.source_file)}, lines ${s.source_lines?.[0]??'—'}–${s.source_lines?.[1]??'—'}${s.certificate?` · certificate: ${esc(s.certificate)}`:''}</div></header><div class="meta">${meta('Index',s.index)}${meta('Root type',rootMath(s.root),true)}${meta('Orbit',s.orbit)}${meta('Middle group',groupMath(s.middle),true)}${meta('Extension',s.extension)}${meta('Line components',s.lines)}</div><div id="sections"></div><section class="detail"><h3>Classes of the (-2)-curves</h3><div class="matrix-box"><div class="latex" id="mx"></div></div><p class="matrix-note">${s.matrix_rows} components × 10 coefficients. Columns: \(L,E_1,\ldots,E_9\).</p></section>`;w.querySelector('#nm').textContent=s.name_math;let sw=w.querySelector('#sections');for(const sec of s.display_sections){let b=document.createElement('section');b.className='detail';let h=document.createElement('h3');h.textContent=sec.label;let d=document.createElement('div');d.className='latex';d.textContent=normalizeBlock(sec.tex);b.append(h,d);sw.appendChild(b)}w.querySelector('#mx').textContent=matrixTex(s.class_matrix);$('detail').replaceChildren(...w.childNodes);if(!$('dlg').open)$('dlg').showModal();history.replaceState(null,'',`#surface=${encodeURIComponent(s.id)}`);typeset([$('detail')])}
+function options(el,vals){for(const v of vals){const o=document.createElement('option');o.value=v;o.textContent=v;el.appendChild(o)}}
+function searchable(s){return [s.name_tex,s.root_tex,s.orbit_tex,s.middle_tex,s.field_cubic,s.cluster,s.infinitely_near,s.normal_extension_verification,s.source_file].join(' ').toLowerCase()}
+function mathCell(tex,cls=''){const td=document.createElement('td');td.className=cls;td.textContent=`\\(${tex}\\)`;return td}
+function render(){
+  const q=$('q').value.trim().toLowerCase(),i=$('fi').value,r=$('fr').value,o=$('fo').value;
+  let a=state.surfaces.filter(s=>(!q||searchable(s).includes(q))&&(!i||String(s.index)===i)&&(!r||s.root_tex===r)&&(!o||s.orbit_tex===o));
+  a=[...a].sort((x,y)=>x.index-y.index||x.root_tex.localeCompare(y.root_tex,undefined,{numeric:true})||x.orbit_tex.localeCompare(y.orbit_tex));
+  $('rows').replaceChildren();
+  for(let k=0;k<a.length;){
+    const start=k,root=a[k].root_tex,index=a[k].index;
+    while(k<a.length&&a[k].root_tex===root&&a[k].index===index)k++;
+    const span=k-start;
+    for(let j=start;j<k;j++){
+      const s=a[j],tr=document.createElement('tr');tr.tabIndex=0;
+      if(j===start)tr.classList.add('group-start');
+      if(j===start){
+        const rt=mathCell(s.root_tex,'root grouped');rt.rowSpan=span;tr.append(rt);
+        const ti=document.createElement('td');ti.className='grouped index-cell';ti.rowSpan=span;ti.innerHTML=`<span class="index">${s.index}</span>`;tr.append(ti);
+      }
+      tr.append(mathCell(s.orbit_tex));
+      tr.append(mathCell(s.middle_tex));
+      const tc=document.createElement('td');tc.textContent=s.component_count;tr.append(tc);
+      const tl=document.createElement('td');tl.textContent=s.line_count;tr.append(tl);
+      tr.onclick=()=>openSurface(s);tr.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openSurface(s)}};
+      $('rows').appendChild(tr);
+    }
+  }
+  $('count').textContent=`${a.length} model${a.length===1?'':'s'}`;$('empty').hidden=!!a.length;typeset([$('rows')]);
+}
+function meta(label,value,math=false){
+  const d=document.createElement('div'),sm=document.createElement('small'),st=document.createElement('strong');
+  sm.textContent=label;st.textContent=math?`\\(${value}\\)`:String(value);d.append(sm,st);return d;
+}
+function latexSection(title,text){
+  const sec=document.createElement('section');sec.className='detail';
+  const h=document.createElement('h3');h.textContent=title;
+  const d=document.createElement('div');d.className='latex';d.textContent=text;
+  sec.append(h,d);return sec;
+}
+function matrixSection(s){
+  const sec=document.createElement('section');sec.className='detail';
+  const h=document.createElement('h3');h.textContent='Classes of the \\((-2)\\)-curves';sec.appendChild(h);
+  const w=document.createElement('div');w.className='matrix-wrap';
+  const t=document.createElement('table');t.className='matrix';
+  const head=document.createElement('thead'),hr=document.createElement('tr');
+  for(const lab of ['L','E_1','E_2','E_3','E_4','E_5','E_6','E_7','E_8','E_9']){const th=document.createElement('th');th.textContent=`\\(${lab}\\)`;hr.appendChild(th)}
+  head.appendChild(hr);t.appendChild(head);
+  const body=document.createElement('tbody');
+  for(const row of s.class_matrix){const tr=document.createElement('tr');for(const x of row){const td=document.createElement('td');td.textContent=x;tr.appendChild(td)}body.appendChild(tr)}
+  t.appendChild(body);w.appendChild(t);sec.appendChild(w);
+  const p=document.createElement('p');p.className='matrix-note';p.textContent=`${s.component_count} components × 10 coefficients. Component degrees: ${s.degree_profile}.`;sec.appendChild(p);
+  return sec;
+}
+function openSurface(s){
+  const w=document.createElement('div');
+  const head=document.createElement('header');head.className='title';
+  const ey=document.createElement('div');ey.className='ey';ey.textContent='Catalogue entry';
+  const h=document.createElement('h2');h.textContent=`\\(${s.name_tex}\\)`;
+  const src=document.createElement('div');src.className='source';
+  const refs=(s.source_refs||[{file:s.source_file,lines:s.source_lines}]).map(r=>`${r.file}, lines ${r.lines[0]}–${r.lines[1]}`).join(' · ');
+  src.textContent=`Source: ${refs}`;
+  head.append(ey,h,src);w.appendChild(head);
+  const mg=document.createElement('div');mg.className='meta';
+  mg.append(meta('Index',s.index),meta('Root type',s.root_tex,true),meta('Extension orbit',s.orbit_tex,true),meta('Middle group',s.middle_tex,true),meta('Components',s.component_count),meta('Line components',s.line_count),meta('Component degrees',s.degree_profile),meta('Audit','source + lattice checks PASS'));
+  w.appendChild(mg);
+  w.appendChild(latexSection('Field, parameters, and cubic',s.field_cubic));
+  w.appendChild(latexSection('Ordered cluster',s.cluster));
+  w.appendChild(latexSection('Infinitely-near data',s.infinitely_near));
+  const normalIntro='The normal class is \\(N=\\mathcal O_C(3)-p_1-\\cdots-p_9\\).\\n\\n';
+  w.appendChild(latexSection('Normal class, extension, and verification',normalIntro+s.normal_extension_verification));
+  w.appendChild(matrixSection(s));
+  $('detail').replaceChildren(...w.childNodes);
+  if(!$('dlg').open)$('dlg').showModal();
+  history.replaceState(null,'',`#surface=${encodeURIComponent(s.id)}`);
+  typeset([$('detail')]);
+}
 function close(){if($('dlg').open)$('dlg').close();if(location.hash.startsWith('#surface='))history.replaceState(null,'',location.pathname+location.search)}
-async function init(){let r=await fetch('data/catalogue.gz',{cache:'no-store'});if(!r.ok)throw Error(`HTTP ${r.status}`);let stream=r.body.pipeThrough(new DecompressionStream('gzip'));let d=await new Response(stream).json();state.surfaces=d.surfaces;options($('fi'),uniq(state.surfaces.map(s=>s.index)));options($('fr'),uniq(state.surfaces.map(s=>s.root)));options($('fo'),uniq(state.surfaces.map(s=>s.orbit)));$('nmodels').textContent=state.surfaces.length;$('nroots').textContent=uniq(state.surfaces.map(s=>s.root)).length;render();let m=location.hash.match(/^#surface=(.+)$/);if(m){let s=state.surfaces.find(x=>x.id===decodeURIComponent(m[1]));if(s)openSurface(s)}}
-['q','fi','fr','fo'].forEach(id=>$(id).addEventListener(id==='q'?'input':'change',render));$('reset').onclick=()=>{$('q').value='';$('fi').value='';$('fr').value='';$('fo').value='';render()};$('close').onclick=close;$('dlg').onclick=e=>{if(e.target===$('dlg'))close()};init().catch(e=>{$('rows').innerHTML=`<tr><td colspan="5">Catalogue data could not be loaded: ${esc(e.message)}</td></tr>`});
+async function init(){
+  const r=await fetch('data/catalogue.gz',{cache:'no-store'});if(!r.ok)throw Error(`HTTP ${r.status}`);
+  const stream=r.body.pipeThrough(new DecompressionStream('gzip'));
+  const d=await new Response(stream).json();state.surfaces=d.surfaces;
+  options($('fi'),uniq(state.surfaces.map(s=>s.index)));options($('fr'),uniq(state.surfaces.map(s=>s.root_tex)));options($('fo'),uniq(state.surfaces.map(s=>s.orbit_tex)));
+  $('nmodels').textContent=state.surfaces.length;$('nroots').textContent=uniq(state.surfaces.map(s=>s.root_tex)).length;render();
+  const m=location.hash.match(/^#surface=(.+)$/);if(m){const s=state.surfaces.find(x=>x.id===decodeURIComponent(m[1]));if(s)openSurface(s)}
+}
+['q','fi','fr','fo'].forEach(id=>$(id).addEventListener(id==='q'?'input':'change',render));
+$('reset').onclick=()=>{$('q').value='';$('fi').value='';$('fr').value='';$('fo').value='';render()};
+$('close').onclick=close;$('dlg').onclick=e=>{if(e.target===$('dlg'))close()};
+init().catch(e=>{$('rows').innerHTML=`<tr><td colspan="6">Catalogue data could not be loaded: ${esc(e.message)}</td></tr>`});
 })();
 </script>
-</body></html>
+</body>
+</html>
