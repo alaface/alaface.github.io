@@ -6,7 +6,7 @@ A static, responsive website with daily updates of publications, preprints and a
 
 ## Update and render
 
-Python 3.9+; no packages, API keys or paid services required.
+Python 3.9+ and curl (preinstalled on macOS and the GitHub Ubuntu runner); no Python packages, API keys or paid services required.
 
 ```sh
 python scripts/update_site.py           # fetch metadata and render the site

@@ -31,6 +31,15 @@ class MetadataTests(unittest.TestCase):
             self.assertEqual(m.get_arxiv(), [item])
             self.assertTrue(request.call_args_list[1].args[0].startswith('https://arxiv.org/api/query?'))
 
+    def test_arxiv_can_use_curl_when_urllib_negotiation_is_rejected(self):
+        error = m.HTTPError('https://export.arxiv.org/api/query', 406, 'Not Acceptable', {}, None)
+        item = {'id': '1234.5678', 'published': '2026-01-01'}
+        with patch.object(m, 'fetch', side_effect=error), patch.object(m, 'parse_arxiv', return_value=([item], 1, 1)), patch.object(m.time, 'sleep'), patch.object(m.subprocess, 'run') as run:
+            run.return_value.stdout = b'feed'
+            self.assertEqual(m.get_arxiv(), [item])
+            self.assertEqual(run.call_args.args[0][0], 'curl')
+            self.assertTrue(run.call_args.kwargs['check'])
+
     def test_invalid_feed_is_not_an_empty_success(self):
         with self.assertRaises((ValueError, m.ET.ParseError)):
             m.parse_arxiv('<html>Upstream unavailable</html>')

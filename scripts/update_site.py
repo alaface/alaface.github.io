@@ -8,6 +8,7 @@ import os
 from pathlib import Path
 import re
 import sys
+import subprocess
 import time
 import unicodedata
 from urllib.parse import urlencode, quote, urlparse
@@ -144,7 +145,18 @@ def get_arxiv():
             # arXiv exposes the same public Atom API on both official hosts.
             # Some export frontends reject otherwise valid content negotiation.
             time.sleep(3)
-            raw = fetch(url.replace('https://export.arxiv.org/', 'https://arxiv.org/'))
+            try:
+                raw = fetch(url.replace('https://export.arxiv.org/', 'https://arxiv.org/'))
+            except HTTPError as alternate_error:
+                if alternate_error.code != 406:
+                    raise
+                # Use curl's native HTTP negotiation when arXiv rejects urllib.
+                # curl is preinstalled on GitHub's Ubuntu runner and macOS.
+                time.sleep(3)
+                result = subprocess.run(['curl', '--fail', '--silent', '--show-error',
+                                         '--location', '--max-time', '30', url],
+                                        capture_output=True, check=True, timeout=35)
+                raw = result.stdout
         batch, total, count = parse_arxiv(raw)
         items.extend(batch)
         start += count
