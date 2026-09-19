@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Semiampleness on Jacobian elliptic surfaces - A. Laface</title>
+  <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+  <header>
+    <nav>
+      <a class="brand" href="../../">Antonio&nbsp;Laface</a>
+      <a href="../../papers/">Papers</a>
+      <a href="../../arxiv/">arXiv</a>
+      <a href="../">Software</a>
+      <a href="../../notes/">Lecture notes</a>
+      <a href="../../book/">Book</a>
+    </nav>
+  </header>
+  <main>
+    <h1>Semiampleness on Jacobian elliptic surfaces of Kodaira dimension one</h1>
+    <p>Computational material for the paper by <strong>Antonio Laface and Sichen Li</strong>.</p>
+    <div class="card">
+      <h2>Script and documentation</h2>
+      <ul>
+        <li><a href="check_I4_3I3_semampleness.py" download>Download the Python script</a></li>
+        <li><a href="https://github.com/alaface/alaface.github.io/blob/main/software/jacobian-semiampleness/README.md">Read the README on GitHub</a> (<a href="README.md" download>download</a>)</li>
+        <li><a href="check_I4_3I3_semampleness-output.txt">Complete verification output, including certified minors</a></li>
+        <li><a href="https://github.com/alaface/alaface.github.io/tree/main/software/jacobian-semiampleness">Browse the source files on GitHub</a></li>
+      </ul>
+    </div>
+    <h2>Running the verification</h2>
+    <p>Requires Python 3.8 or later and only the standard library. Run from the directory containing the downloaded script:</p>
+    <pre style="overflow-x:auto"><code>python3 check_I4_3I3_semampleness.py
+python3 check_I4_3I3_semampleness.py --show-minors</code></pre>
+    <p>The second command also prints the row and column indices of the certified minors. Run without Python's <code>-O</code> or <code>-OO</code> options, because the checks use assertions.</p>
+    <h2>What is verified</h2>
+    <p>The script constructs the eight rational matrices of size 75 by 54 associated with the I4 + 3I3 + 23I1 example. It verifies an exact nonzero kernel vector and a nonzero 53 by 53 minor modulo 1000003 for each matrix. Together these certify rank exactly 53 over the rational numbers and kernel dimension one.</p>
+    <p>It also certifies five squarefreeness and coprimality conditions used in the discriminant calculation. The README explains the construction and expected output.</p>
+    <p>The geometric interpretation, deformation argument and deduction of non-semiampleness are proved in the paper.</p>
+  </main>
+  <footer>&copy; <span id="y"></span> Antonio Laface</footer>
+  <script>document.getElementById('y').textContent = new Date().getFullYear();</script>
+</body>
+</html>
