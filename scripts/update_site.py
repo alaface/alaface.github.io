@@ -292,13 +292,15 @@ def render(publications, arxiv, repositories):
     body += '<p class="source-note">Source: arXiv. Preprints are dated by their first arXiv submission. Publication status follows the available bibliographic records.</p>'
     (ROOT / 'arxiv/index.html').write_text(page('Preprints', 'arxiv', body, True))
     repos = repositories['items']
-    body = '<div class="page-heading"><p class="eyebrow">Computational resources</p><h1>Software</h1><p class="lead">Research code, mathematical software and interactive catalogues.</p></div><section class="feature"><div><h2>Extremal Halphen surfaces</h2><p>A catalogue of 26 explicit plane models, with marked points, component classes and verification notes.</p><a href="/halphen-surfaces/">Open the catalogue →</a></div><div><h2>Jacobian elliptic surfaces</h2><p>Exact computations and verification material for semiampleness on Jacobian elliptic surfaces.</p><a href="https://github.com/alaface/jacobian-semiampleness">View the project →</a></div></section><h2>GitHub repositories</h2><p>All public repositories on <a href="https://github.com/alaface?tab=repositories">github.com/alaface</a>.</p>' + updated(repositories)
-    body += search_box(len(repos), 'Search repositories') + '<div class="repository-list">'
+    body = f'<div class="page-heading"><p class="eyebrow">Computational resources</p><h1>Software</h1><p class="lead">All {len(repos)} public repositories on <a href="https://github.com/alaface?tab=repositories">GitHub</a>, in alphabetical order.</p></div>'
+    body += f'<div class="repository-tools"><label class="filter"><span>Search repositories</span><input type="search" data-filter placeholder="Type to filter…"></label><button class="filter-reset" type="button" data-reset-filter>Show all repositories</button></div><p class="count" data-count data-item-label="repositories" aria-live="polite">{len(repos)} repositories</p><p data-empty hidden>No matching repositories.</p><div class="repository-list">'
     for r in repos:
         badges = (' · Fork' if r['fork'] else '') + (' · Archived' if r['archived'] else '')
         description = f'<p>{esc(r["description"])}</p>' if r['description'] else ''
         body += f'<article class="repository" data-search="{esc(r["name"] + " " + r["description"])}"><h3>{link(r["url"], r["name"])} ↗</h3>{description}<p class="meta">GitHub{badges}</p></article>'
     body += '</div>'
+    body += updated(repositories)
+    body += '<h2>Catalogues and supporting material</h2><section class="feature"><div><h3>Extremal Halphen surfaces</h3><p>A catalogue of 26 explicit plane models, with marked points, component classes and verification notes.</p><a href="/halphen-surfaces/">Open the catalogue →</a></div><div><h3>Jacobian elliptic surfaces</h3><p>Exact computations and verification material for semiampleness on Jacobian elliptic surfaces.</p><a href="https://github.com/alaface/jacobian-semiampleness">View the project →</a></div></section>'
     (ROOT / 'software/index.html').write_text(page('Software', 'software', body))
     print(f'Rendered {len(pubs)} publications, {len(preprints)} preprints, {len(published)} archived arXiv papers and {len(repos)} public repositories.')
 

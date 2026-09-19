@@ -14,7 +14,13 @@ if (search) {
       group.hidden = !group.querySelector('[data-search]:not([hidden])');
     });
     document.querySelectorAll('[data-archive]').forEach(archive => { archive.open = terms.length > 0; });
-    document.querySelector('[data-count]').textContent = `${visible} of ${entries.length} entries`;
+    const count = document.querySelector('[data-count]');
+    count.textContent = `${visible} of ${entries.length} ${count.dataset.itemLabel || 'entries'}`;
     document.querySelector('[data-empty]').hidden = visible > 0;
+  });
+  document.querySelector('[data-reset-filter]')?.addEventListener('click', () => {
+    search.value = '';
+    search.dispatchEvent(new Event('input'));
+    search.focus();
   });
 }
