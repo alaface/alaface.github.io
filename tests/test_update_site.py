@@ -18,6 +18,12 @@ class MetadataTests(unittest.TestCase):
         self.assertEqual(items[0]['id'], 'math/0205271')
         self.assertEqual(items[0]['title'], 'A & B')
 
+    def test_arxiv_requests_atom_instead_of_json(self):
+        with patch.object(m, 'urlopen') as request:
+            request.return_value.__enter__.return_value.read.return_value = b'feed'
+            self.assertEqual(m.fetch('https://export.arxiv.org/api/query?search_query=au%3ALaface'), b'feed')
+            self.assertEqual(request.call_args.args[0].get_header('Accept'), 'application/atom+xml')
+
     def test_invalid_feed_is_not_an_empty_success(self):
         with self.assertRaises((ValueError, m.ET.ParseError)):
             m.parse_arxiv('<html>Upstream unavailable</html>')

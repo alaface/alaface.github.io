@@ -40,7 +40,7 @@ def arxiv_id(value):
     return re.sub(r'v\d+$', '', value.split('/abs/')[-1].replace('arXiv:', ''))
 
 def fetch(url):
-    headers = {'User-Agent': 'AntonioLafaceHomepage/1.0 (https://alaface.github.io)', 'Accept': 'application/json, application/atom+xml;q=0.9'}
+    headers = {'User-Agent': 'AntonioLafaceHomepage/1.0 (https://alaface.github.io)', 'Accept': 'application/atom+xml' if urlparse(url).hostname == 'export.arxiv.org' else 'application/json'}
     if urlparse(url).hostname == 'api.github.com' and os.environ.get('GITHUB_TOKEN'):
         headers['Authorization'] = 'Bearer ' + os.environ['GITHUB_TOKEN']
     for attempt in range(3):
