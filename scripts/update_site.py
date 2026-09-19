@@ -12,6 +12,7 @@ import time
 import unicodedata
 from urllib.parse import urlencode, quote, urlparse
 from urllib.request import Request, urlopen
+from urllib.error import HTTPError
 import xml.etree.ElementTree as ET
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -40,13 +41,19 @@ def arxiv_id(value):
     return re.sub(r'v\d+$', '', value.split('/abs/')[-1].replace('arXiv:', ''))
 
 def fetch(url):
-    headers = {'User-Agent': 'AntonioLafaceHomepage/1.0 (https://alaface.github.io)', 'Accept': 'application/atom+xml' if urlparse(url).hostname == 'export.arxiv.org' else 'application/json'}
+    headers = {'User-Agent': 'AntonioLafaceHomepage/1.0 (https://alaface.github.io)', 'Accept': 'application/atom+xml' if urlparse(url).hostname in ('export.arxiv.org', 'arxiv.org') else 'application/json'}
     if urlparse(url).hostname == 'api.github.com' and os.environ.get('GITHUB_TOKEN'):
         headers['Authorization'] = 'Bearer ' + os.environ['GITHUB_TOKEN']
     for attempt in range(3):
         try:
             with urlopen(Request(url, headers=headers), timeout=30) as response:
                 return response.read()
+        except HTTPError as error:
+            if error.code < 500 and error.code != 429:
+                raise
+            if attempt == 2:
+                raise
+            time.sleep(3 * (attempt + 1))
         except Exception:
             if attempt == 2:
                 raise
@@ -129,7 +136,16 @@ def get_arxiv():
     items, start = [], 0
     while True:
         url = 'https://export.arxiv.org/api/query?' + urlencode({'search_query': 'au:Laface', 'start': start, 'max_results': 100, 'sortBy': 'submittedDate', 'sortOrder': 'descending'})
-        batch, total, count = parse_arxiv(fetch(url))
+        try:
+            raw = fetch(url)
+        except HTTPError as error:
+            if error.code != 406:
+                raise
+            # arXiv exposes the same public Atom API on both official hosts.
+            # Some export frontends reject otherwise valid content negotiation.
+            time.sleep(3)
+            raw = fetch(url.replace('https://export.arxiv.org/', 'https://arxiv.org/'))
+        batch, total, count = parse_arxiv(raw)
         items.extend(batch)
         start += count
         if start >= total:
@@ -178,6 +194,9 @@ def refresh(name, getter, source, offline=False):
     try:
         return write_cache(name, getter(), source), None
     except Exception as error:
+        if isinstance(error, HTTPError):
+            detail = clean(error.read(400).decode('utf-8', errors='replace'))
+            error = RuntimeError(f'{error}: {detail}')
         print(f'::warning::{name}: {error}; keeping the last successful snapshot.', file=sys.stderr)
         if not path.exists():
             raise RuntimeError(f'{name}: no saved snapshot available') from error
