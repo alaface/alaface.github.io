@@ -93,6 +93,20 @@ class MetadataTests(unittest.TestCase):
         self.assertIn('&lt;script&gt;', m.link('https://example.org/', '<script>'))
         self.assertNotIn('<script>', m.link('https://example.org/', '<script>'))
 
+    def test_preprints_use_a_rolling_five_year_submission_window(self):
+        items = [
+            {'id': 'old', 'published': '2021-09-18', 'updated': '2026-09-19'},
+            {'id': 'boundary', 'published': '2021-09-19'},
+            {'id': 'recent', 'published': '2026-09-19'},
+            {'id': 'future', 'published': '2026-09-20'},
+        ]
+        self.assertEqual([p['id'] for p in m.recent_preprints(items, m.date(2026, 9, 19))],
+                         ['boundary', 'recent'])
+
+    def test_preprint_window_handles_leap_day(self):
+        items = [{'published': '2019-02-27'}, {'published': '2019-02-28'}]
+        self.assertEqual(m.recent_preprints(items, m.date(2024, 2, 29)), items[1:])
+
     def test_real_snapshots_are_complete_and_consistent(self):
         pubs = json.loads((ROOT / 'data/publications.json').read_text())['items']
         arxiv = json.loads((ROOT / 'data/arxiv.json').read_text())['items']

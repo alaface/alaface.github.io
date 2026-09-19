@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Refresh public metadata and render static pages; no third-party dependencies."""
 import argparse
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from html import escape
 import json
 import os
@@ -265,6 +265,14 @@ def partition_arxiv(items, publications):
         (published if known else preprints).append(p)
     return preprints, published
 
+def recent_preprints(items, today=None):
+    today = today or datetime.now(timezone.utc).date()
+    try:
+        cutoff = today.replace(year=today.year - 5)
+    except ValueError:  # February 29 has no counterpart five years earlier.
+        cutoff = today.replace(year=today.year - 5, day=28)
+    return [p for p in items if cutoff <= date.fromisoformat(p['published']) <= today]
+
 def render(publications, arxiv, repositories):
     home = '''<section class="hero"><div><p class="eyebrow">Mathematics · Universidad de Concepción</p><h1>Antonio Laface</h1><p class="position">Full Professor</p><p class="affiliation">Departamento de Matemática<br>Facultad de Ciencias Físicas y Matemáticas<br>Universidad de Concepción, Chile</p><p class="contact"><a href="mailto:antonio.laface@gmail.com">antonio.laface@gmail.com</a><br><a href="tel:+56412203173">+56 41 220 3173</a><br>Casilla 160-C, Concepción, Chile</p></div><figure><img src="/assets/home.jpg" width="600" height="449" alt="Stingrays swimming in clear turquoise water" fetchpriority="high"></figure></section>
 <section class="section-links" aria-label="Explore"><a href="/papers/"><strong>Publications ↗</strong><span>Articles, chapters and books</span></a><a href="/arxiv/"><strong>Preprints ↗</strong><span>Recent manuscripts on arXiv</span></a><a href="/software/"><strong>Software ↗</strong><span>Code and computational resources</span></a><a href="/book/"><strong>Cox Rings ↗</strong><span>Cambridge Studies in Advanced Mathematics</span></a></section>
@@ -276,11 +284,12 @@ def render(publications, arxiv, repositories):
     body += '<p class="source-note">Bibliographic metadata: ' + link(ZB_PROFILE, 'zbMATH Open') + ' / FIZ Karlsruhe, under ' + link('https://creativecommons.org/licenses/by-sa/4.0/', 'CC BY-SA 4.0') + '. Metadata selected and reformatted; no reviews are reproduced.</p>'
     (ROOT / 'papers/index.html').write_text(page('Publications', 'papers', body, True))
     preprints, published = partition_arxiv(arxiv['items'], pubs)
-    body = '<div class="page-heading"><p class="eyebrow">Research</p><h1>Preprints</h1><p class="lead">Recent manuscripts and the arXiv archive.</p>' + updated(arxiv) + f'<div class="source-links">{link(ARXIV_PROFILE, "All submissions on arXiv")}{link("https://alaface.github.io/papers/", "Publications")}</div></div>'
-    body += search_box(len(arxiv['items']), 'Search manuscripts by title, author, year or arXiv ID')
+    preprints = recent_preprints(preprints)
+    body = '<div class="page-heading"><p class="eyebrow">Research</p><h1>Preprints</h1><p class="lead">Preprints from the last five years and the published arXiv archive.</p>' + updated(arxiv) + f'<div class="source-links">{link(ARXIV_PROFILE, "All submissions on arXiv")}{link("https://alaface.github.io/papers/", "Publications")}</div></div>'
+    body += search_box(len(preprints) + len(published), 'Search manuscripts by title, author, year or arXiv ID')
     body += f'<h2>Preprints <span class="count">({len(preprints)})</span></h2>' + groups(preprints, arxiv_entry)
     body += f'<details data-archive><summary>Published work on arXiv ({len(published)})</summary>' + groups(published, arxiv_entry) + '</details>'
-    body += '<p class="source-note">Source: arXiv. Publication status follows the available bibliographic records.</p>'
+    body += '<p class="source-note">Source: arXiv. Preprints are dated by their first arXiv submission. Publication status follows the available bibliographic records.</p>'
     (ROOT / 'arxiv/index.html').write_text(page('Preprints', 'arxiv', body, True))
     repos = repositories['items']
     body = '<div class="page-heading"><p class="eyebrow">Computational resources</p><h1>Software</h1><p class="lead">Research code, mathematical software and interactive catalogues.</p></div><section class="feature"><div><h2>Extremal Halphen surfaces</h2><p>A catalogue of 26 explicit plane models, with marked points, component classes and verification notes.</p><a href="/halphen-surfaces/">Open the catalogue →</a></div><div><h2>Jacobian elliptic surfaces</h2><p>Exact computations and verification material for semiampleness on Jacobian elliptic surfaces.</p><a href="https://github.com/alaface/jacobian-semiampleness">View the project →</a></div></section><h2>GitHub repositories</h2><p>All public repositories on <a href="https://github.com/alaface?tab=repositories">github.com/alaface</a>.</p>' + updated(repositories)
