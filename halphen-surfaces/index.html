@@ -29,9 +29,12 @@ h2{font-size:29px;margin:0 0 12px} h3{font-size:21px;margin:0 0 12px}
 .stats{display:flex;gap:42px;border-bottom:1px solid var(--line);padding-bottom:28px;margin-bottom:30px}
 .stats strong{display:block;font:30px Georgia,serif}.stats span{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
 .note{border:1px solid var(--line);border-radius:12px;background:#fbfcfd;padding:17px 20px;margin-bottom:34px}
-.note p{margin:.45em 0}.notation{margin-top:10px;padding-top:10px;border-top:1px solid #edf0f2}
+.note p{margin:.65em 0}.notation{margin-top:14px;padding-top:14px;border-top:1px solid #edf0f2}
+.note details+details{margin-top:14px}.note summary{cursor:pointer;font-weight:600}.note details[open] summary{margin-bottom:12px}
+.note mjx-container[jax="CHTML"][display="true"]{max-width:100%;overflow-x:auto;overflow-y:hidden;padding:5px 0}
+a{color:var(--accent)}.orbit-legend{display:grid;grid-template-columns:max-content 1fr;gap:5px 14px;margin:12px 0}.orbit-legend dt{font-weight:600}.orbit-legend dd{margin:0}
 .filters{display:grid;grid-template-columns:2fr repeat(3,1fr) auto;gap:10px;margin:14px 0;padding:14px;background:var(--wash);border-radius:11px}
-.filters input,.filters select,.filters button{font:inherit;border:1px solid #ccd4dc;border-radius:8px;background:#fff;padding:10px}
+.filters input,.filters select,.filters button{font:inherit;border:1px solid #ccd4dc;border-radius:8px;background:#fff;padding:10px;min-width:0}
 .filters button{cursor:pointer}.resultmeta{color:var(--muted);margin:10px 2px}
 .wrap{overflow:auto;border:1px solid var(--line);border-radius:11px}
 table.catalogue{width:100%;border-collapse:collapse;min-width:900px}
@@ -51,7 +54,9 @@ dialog::backdrop{background:#0006}.dialog{padding:0 30px 34px}
 .meta small{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}
 .meta strong{font-weight:600;overflow-wrap:anywhere}
 .detail{border-top:1px solid var(--line);padding:23px 0}
-.latex{white-space:normal;overflow-wrap:normal}
+.latex{white-space:normal;overflow-wrap:normal;min-width:0}
+.latex p{margin:.7em 0}.latex p:first-child{margin-top:0}.math-block{min-width:0;max-width:100%;overflow-x:auto}
+.verification-scope{font-size:13px;color:#536273;border-left:3px solid #dfe5ea;padding-left:12px;margin-top:18px}
 .latex mjx-container[jax="CHTML"][display="true"]{overflow-x:auto;overflow-y:hidden;padding:5px 0}
 .matrix-wrap{overflow:auto;border:1px solid var(--line);border-radius:10px;background:#fbfcfd;padding:10px}
 table.matrix{border-collapse:collapse;margin:auto;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:14px}
@@ -79,18 +84,58 @@ footer{border-top:1px solid var(--line);padding-top:22px;padding-bottom:35px;col
 <p>The class matrix always has ten columns, in the ordered basis \((L,E_1,\ldots,E_9)\). Its number of rows is the number of prime \((-2)\)-components in the affine ADE configuration.</p>
 <div class="notation"><b>Notation.</b>
 \[
-D=dL+e_1E_1+\cdots+e_9E_9,\qquad
+D=dL+e_1E_1+\cdots+e_9E_9,\qquad K_X=-3L+E_1+\cdots+E_9.
+\]
+\[
 \mathscr G(g_1,\ldots,g_7)=g_1x^2y+g_2x^2z+g_3xy^2+g_4xyz+g_5xz^2+g_6y^2z+g_7yz^2.
 \]
 </div>
+<details class="notation" id="conventions">
+<summary>Curve, normal class, and extension notation</summary>
+<p>Throughout the catalogue, \(C\) denotes the displayed smooth plane cubic; \(E\) denotes it when given in Weierstrass form, and \(G\) denotes its defining polynomial. The normal class and the finite lattice quotient are</p>
+\[
+N=\mathcal O_C(3)(-p_1-\cdots-p_9)\in\operatorname{Pic}^0(C),\qquad
+H=K_X^\perp/\langle D_1,\ldots,D_r\rangle.
+\]
+<p>Here \(D_i\) are the rows of the class matrix. Restriction to \(C\) sends \([-K_X]\in H\) to \(N\); coordinates in a Smith basis of \(H\) refer to that basis. In the index-five entries, \(h\) denotes \(N\) in additive notation. The normal class has order \(m\), the Halphen index, on the admissible open of each family.</p>
+<p>The symbol \(\xi\) denotes an extension class in the presentation specified for that family. Orbit labels are interpreted within the relevant root type:</p>
+<dl class="orbit-legend">
+<dt>sp</dt><dd>Split extension.</dd>
+<dt>ns</dt><dd>Nonsplit extension.</dd>
+<dt>cyc</dt><dd>Orbit with cyclic middle group.</dd>
+<dt>mid</dt><dd>Intermediate orbit in the index-four cyclic-quotient families.</dd>
+<dt>pair / fixed</dt><dd>The two-element nonzero orbit / fixed nonzero orbit for \(D_6+2A_1\).</dd>
+<dt>unique nonzero</dt><dd>The unique nonzero extension orbit for \(2D_4\).</dd>
+<dt>other 2 / ord 4</dt><dd>The nondistinguished order-two orbit / order-four orbit for \(2A_3+2A_1\).</dd>
+<dt>\(\xi=3\) / \(\xi=\pm2\)</dt><dd>The indicated orbits for the index-six family.</dd>
+</dl>
+</details>
+<details class="notation" id="charts">
+<summary>Infinitely-near points and recursive charts</summary>
+<p>The relation \(p_i\prec p_j\) means that \(p_j\) lies above \(p_i\); chains run from the proper point to the successive infinitely-near centers. Subscripts label the centers and do not always give the blow-up order. Repeated projective coordinates record the same image in the plane.</p>
+<p>Every infinitely-near center lies on the strict transform of \(C\). Translate the stated proper center to \((u_0,v_0)=(0,0)\). For each listed tangent \([\alpha_j:\beta_j]\), the next chart, centered at the next point, is</p>
+\[
+\begin{cases}
+u_j=u_{j+1},\quad v_j=u_{j+1}(\beta_j/\alpha_j+v_{j+1}),&\alpha_j\ne0,\\
+u_j=u_{j+1}v_{j+1},\quad v_j=u_{j+1},&\alpha_j=0.
+\end{cases}
+\]
+<p>These coordinate choices fix the signs and scales used for all subsequent tangents.</p>
+</details>
+<details class="notation" id="verification">
+<summary>Verification scope and sources</summary>
+<p>The audit of 19 September 2026 checks all 26 matrices against their cited sources and independently verifies all 268 component classes, all 60 affine fibre relations, the middle groups, and the indices. Geometric certificates were also rerun; each entry states the scope of its checks.</p>
+<p>For nine incidence models of indices 4 or 6, the rerun verifies the specified finite-field specializations. This alone is not an independent verification of every generic characteristic-zero assertion. Geometric integrality is asserted on a suitable nonempty open, which may require more than smoothness of the cubic and distinctness of the proper centers.</p>
+<p><a href="https://github.com/alaface/alaface.github.io/blob/main/halphen-surfaces/AUDIT.md">Read the audit, certificate list, and source notes</a>.</p>
+</details>
 </section>
 
 <h2>Models</h2>
 <div class="filters">
-<input id="q" type="search" placeholder="Search surface, lattice, group, field, certificate…">
-<select id="fi"><option value="">All indices</option></select>
-<select id="fr"><option value="">All root types</option></select>
-<select id="fo"><option value="">All extension orbits</option></select>
+<input id="q" type="search" aria-label="Search models" placeholder="Search surface, lattice, group, field, certificate…">
+<select id="fi" aria-label="Halphen index"><option value="">All indices</option></select>
+<select id="fr" aria-label="Root type"><option value="">All root types</option></select>
+<select id="fo" aria-label="Extension orbit"><option value="">All extension orbits</option></select>
 <button id="reset">Reset</button>
 </div>
 <div class="resultmeta" id="count"></div>
@@ -103,7 +148,7 @@ D=dL+e_1E_1+\cdots+e_9E_9,\qquad
 </main>
 
 <dialog id="dlg"><article class="dialog"><div class="top"><button class="close" id="close" aria-label="Close">×</button></div><div id="detail"></div></article></dialog>
-<footer>Extremal Halphen Surfaces · source-normalized catalogue · <span class="audit-ok">26/26 source and lattice checks passed</span></footer>
+<footer>Extremal Halphen Surfaces · <span class="audit-ok">26/26 source and lattice checks passed</span> · <a href="https://github.com/alaface/alaface.github.io/blob/main/halphen-surfaces/AUDIT.md">Verification details · 19 September 2026</a></footer>
 
 <script>
 (()=>{
@@ -111,8 +156,16 @@ const $=id=>document.getElementById(id),state={surfaces:[]};
 const uniq=a=>[...new Set(a)].sort((x,y)=>String(x).localeCompare(String(y),undefined,{numeric:true}));
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 function typeset(nodes){if(window.MathJax?.typesetPromise)MathJax.typesetPromise(nodes).catch(()=>{})}
-function options(el,vals){for(const v of vals){const o=document.createElement('option');o.value=v;o.textContent=v;el.appendChild(o)}}
-function searchable(s){return [s.name_tex,s.root_tex,s.orbit_tex,s.middle_tex,s.field_cubic,s.cluster,s.infinitely_near,s.normal_extension_verification,s.source_file].join(' ').toLowerCase()}
+const orbitLabels={
+  '\\mathrm{sp}':'Split (sp)', '\\mathrm{ns}':'Nonsplit (ns)', '\\mathrm{cyc}':'Cyclic (cyc)',
+  '\\mathrm{mid}':'Intermediate (mid)', '\\mathrm{pair}':'Two-element orbit (pair)', '\\mathrm{fixed}':'Fixed nonzero orbit',
+  '\\mathrm{unique\\ nonzero}':'Unique nonzero orbit', '\\mathrm{other}\\ 2':'Other order-two orbit', '\\mathrm{ord}\\ 4':'Order-four orbit',
+  '\\xi=\\pm2':'ξ = ±2', '\\xi=3':'ξ = 3'
+};
+const rootLabel=tex=>tex.replace(/_(\d+)/g,(_,n)=>[...n].map(c=>'₀₁₂₃₄₅₆₇₈₉'[Number(c)]).join('')).replace(/\+/g,' + ');
+const orbitLabel=tex=>orbitLabels[tex]||tex;
+function options(el,vals,label=String){for(const v of vals){const o=document.createElement('option');o.value=v;o.textContent=label(v);el.appendChild(o)}}
+function searchable(s){return [s.name_tex,s.root_tex,rootLabel(s.root_tex),s.orbit_tex,orbitLabel(s.orbit_tex),s.middle_tex,s.field_cubic,s.cluster,s.infinitely_near,s.normal_extension_verification,s.source_file].join(' ').toLowerCase()}
 function mathCell(tex,cls=''){const td=document.createElement('td');td.className=cls;td.textContent=`\\(${tex}\\)`;return td}
 function render(){
   const q=$('q').value.trim().toLowerCase(),i=$('fi').value,r=$('fr').value,o=$('fo').value;
@@ -147,8 +200,28 @@ function meta(label,value,math=false){
 function latexSection(title,text){
   const sec=document.createElement('section');sec.className='detail';
   const h=document.createElement('h3');h.textContent=title;
-  const d=document.createElement('div');d.className='latex';d.textContent=text;
+  const d=document.createElement('div');d.className='latex';
+  for(const block of text.trim().split(/(\\\[[\s\S]*?\\\]|\$\$[\s\S]*?\$\$)/g)){
+    if(!block.trim())continue;
+    if(block.startsWith('\\[')||block.startsWith('$$')){
+      const math=document.createElement('div');math.className='math-block';math.textContent=block;d.appendChild(math);
+    }else{
+      for(const paragraph of block.split(/\n\s*\n/)){
+        if(!paragraph.trim())continue;
+        const p=document.createElement('p');p.textContent=paragraph.trim();d.appendChild(p);
+      }
+    }
+  }
   sec.append(h,d);return sec;
+}
+function verificationScope(s){
+  if(s.index===2)return 'Rerun: exact function-field certificates for the cubic, cluster, normal order, and component geometry.';
+  if(s.id==='4a2-ns-3')return 'Rerun: generic normal order and parameter-field checks; characteristic-zero checks at t = 1 and absolute irreducibility of the twelve components modulo 31.';
+  if(s.index===3)return 'Rerun: exact function-field certificates for this model, including the marked cluster and component checks.';
+  if(['a7-a1-sp-4','a7-a1-mid-4','d5-a3-mid-4'].includes(s.id))return 'Rerun: generic Weierstrass identities and row restrictions, with component checks at characteristic-zero number-field specializations.';
+  if(s.id==='2a4-sp-5')return 'Rerun: generic point identities and normal order; parameter-field checks; Weil pairing and ten unique absolutely irreducible sections at the stated reduction modulo 31.';
+  if(s.id==='2a4-cyc-5')return 'Rerun: division-locus construction; point identities, orders 25 and 5, and row restrictions at the degree-twelve characteristic-zero point; ten unique absolutely irreducible sections modulo 17.';
+  return 'Rerun: the printed incidence formulas, orders, and component geometry at the specified finite-field specialization, together with parameter-curve checks. This is not a separate rerun of all generic characteristic-zero assertions.';
 }
 function matrixSection(s){
   const sec=document.createElement('section');sec.className='detail';
@@ -171,16 +244,18 @@ function openSurface(s){
   const h=document.createElement('h2');h.textContent=`\\(${s.name_tex}\\)`;
   const src=document.createElement('div');src.className='source';
   const refs=(s.source_refs||[{file:s.source_file,lines:s.source_lines}]).map(r=>`${r.file}, lines ${r.lines[0]}–${r.lines[1]}`).join(' · ');
-  src.textContent=`Source: ${refs}`;
+  src.textContent=`Source locator: ${refs} · `;
+  const auditLink=document.createElement('a');auditLink.href='https://github.com/alaface/alaface.github.io/blob/main/halphen-surfaces/AUDIT.md';auditLink.textContent='Source and verification notes';src.appendChild(auditLink);
   head.append(ey,h,src);w.appendChild(head);
   const mg=document.createElement('div');mg.className='meta';
-  mg.append(meta('Index',s.index),meta('Root type',s.root_tex,true),meta('Extension orbit',s.orbit_tex,true),meta('Middle group',s.middle_tex,true),meta('Components',s.component_count),meta('Line components',s.line_count),meta('Component degrees',s.degree_profile),meta('Audit','source + lattice checks PASS'));
+  mg.append(meta('Index',s.index),meta('Root type',s.root_tex,true),meta('Extension orbit',s.orbit_tex,true),meta('Middle group',s.middle_tex,true),meta('Components',s.component_count),meta('Line components',s.line_count),meta('Component degrees',s.degree_profile),meta('Lattice audit','Passed · 19 Sep 2026'));
   w.appendChild(mg);
   w.appendChild(latexSection('Field, parameters, and cubic',s.field_cubic));
   w.appendChild(latexSection('Ordered cluster',s.cluster));
   w.appendChild(latexSection('Infinitely-near data',s.infinitely_near));
-  const normalIntro='The normal class is \\(N=\\mathcal O_C(3)-p_1-\\cdots-p_9\\).\\n\\n';
-  w.appendChild(latexSection('Normal class, extension, and verification',normalIntro+s.normal_extension_verification));
+  const normalIntro=`The normal class is \\(N=\\mathcal O_C(3)(-p_1-\\cdots-p_9)\\in\\operatorname{Pic}^0(C)\\), of order \\(${s.index}\\) on the admissible open.\n\n`;
+  const verification=latexSection('Normal class, extension, and verification',normalIntro+s.normal_extension_verification);
+  const scope=document.createElement('p');scope.className='verification-scope';scope.textContent=verificationScope(s);verification.appendChild(scope);w.appendChild(verification);
   w.appendChild(matrixSection(s));
   $('detail').replaceChildren(...w.childNodes);
   if(!$('dlg').open)$('dlg').showModal();
@@ -192,7 +267,7 @@ async function init(){
   const r=await fetch('data/catalogue.gz',{cache:'no-store'});if(!r.ok)throw Error(`HTTP ${r.status}`);
   const stream=r.body.pipeThrough(new DecompressionStream('gzip'));
   const d=await new Response(stream).json();state.surfaces=d.surfaces;
-  options($('fi'),uniq(state.surfaces.map(s=>s.index)));options($('fr'),uniq(state.surfaces.map(s=>s.root_tex)));options($('fo'),uniq(state.surfaces.map(s=>s.orbit_tex)));
+  options($('fi'),uniq(state.surfaces.map(s=>s.index)));options($('fr'),uniq(state.surfaces.map(s=>s.root_tex)),rootLabel);options($('fo'),uniq(state.surfaces.map(s=>s.orbit_tex)),orbitLabel);
   $('nmodels').textContent=state.surfaces.length;$('nroots').textContent=uniq(state.surfaces.map(s=>s.root_tex)).length;render();
   const m=location.hash.match(/^#surface=(.+)$/);if(m){const s=state.surfaces.find(x=>x.id===decodeURIComponent(m[1]));if(s)openSurface(s)}
 }
