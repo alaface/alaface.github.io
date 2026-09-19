@@ -1,0 +1,81 @@
+name: Update and publish website
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '23 6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: website
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: https://alaface.github.io
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Refresh publications, preprints and repositories
+        id: refresh
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python scripts/update_site.py
+      - name: Check metadata and rendering
+        run: python -m unittest discover -s tests -v
+      - name: Save the last successful snapshots
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add data index.html papers/index.html arxiv/index.html software/index.html
+          if ! git diff --cached --quiet; then
+            git commit -m 'Update publications, preprints and public repositories'
+            git push
+          fi
+      - name: Read the Pages build source
+        id: pages
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mode=$(gh api "repos/$GITHUB_REPOSITORY/pages" --jq '.build_type // "legacy"')
+          echo "mode=$mode" >> "$GITHUB_OUTPUT"
+      - name: Request publication from the configured branch
+        if: steps.pages.outputs.mode == 'legacy'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api --method POST "repos/$GITHUB_REPOSITORY/pages/builds"
+      - name: Configure Pages
+        if: steps.pages.outputs.mode == 'workflow'
+        uses: actions/configure-pages@v5
+      - name: Prepare public files
+        if: steps.pages.outputs.mode == 'workflow'
+        run: |
+          mkdir _site
+          cp index.html .nojekyll _site/
+          cp -R assets papers arxiv software book halphen-surfaces recipes _site/
+      - name: Upload website
+        if: steps.pages.outputs.mode == 'workflow'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - name: Publish website
+        if: steps.pages.outputs.mode == 'workflow'
+        id: deployment
+        uses: actions/deploy-pages@v4
+      - name: Report upstream failures after publishing saved data
+        if: steps.refresh.outcome == 'failure'
+        run: |
+          echo 'At least one source could not be refreshed. The last successful data remain published; see the refresh warning above.'
+          exit 1
