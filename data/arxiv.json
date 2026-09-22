@@ -1,7 +1,21 @@
 {
   "source": "https://arxiv.org/search/math?searchtype=author&query=Laface%2C+A&order=-announced_date_first&size=200",
-  "updated": "2026-09-21T13:02:08+00:00",
+  "updated": "2026-09-22T11:52:10+00:00",
   "items": [
+    {
+      "id": "2609.23306",
+      "title": "Semiampleness on Jacobian elliptic surfaces of Kodaira dimension one",
+      "authors": [
+        "Antonio Laface",
+        "Sichen Li"
+      ],
+      "year": "2026",
+      "published": "2026-09-20",
+      "updated": "2026-09-20",
+      "summary": "Let $π: X\\to \\mathbb P^1$ be a semistable Jacobian elliptic surface over $\\mathbb C$, and set $χ=χ(\\mathcal O_X)\\ge3$, so that $κ(X)=1$. Assume that the Mordell-Weil group of $π$ is finite and that $π$ has at least one reducible fiber, the reducible fibers being of types $I_{n_1},\\cdots, I_{n_s}$. Recently, Laface et al. proved that the zero section and the components of the reducible fibers generate $\\overline{\\mathrm NE}(X)$ if and only if $$δ(π):=\\sum_{i=1}^s\\frac{\\lfloor n_i^2/4\\rfloor}{n_i}\\leχ.$$ In particular, the Mori cone is rational polyhedral in this range. They also proved that $N(π)=\\sum_{i=1}^s n_i\\le 2χ+3$ implies that $X$ is a Mori dream surface. In this paper, we study the existence problem of Mori dream surfaces provided that $N(π)\\ge 2χ+4$. Suppose $δ(π)\\le χ$. We first show that every nef isotropic divisor on $X$ is semiample, and whenever each $n_i$ is even. Furthermore, when every $n_i$ is even, we obtain criteria for $X$ to be a Mori dream surface: $X$ is a Mori dream surface provided that either (i) all $n_i=2$, or (ii) $N(π)\\le 2χ+4$; if some $n_j=4$, then $X$ is a Mori dream surface if and only if $N(π)\\le 2χ+4$. However, once some $n_i$ is odd, we construct a Jacobian elliptic surface $π: Y\\to\\mathbb P^1$ with $δ(π)=χ=3$, trivial Mordell-Weil group, and singular-fiber configuration $I_4+3I_3+23I_1$ for which none of the eight non-vertical isotropic extremal rays is semiample. In particular, $Y$ is not a Mori dream surface.",
+      "journal": "",
+      "doi": ""
+    },
     {
       "id": "2608.28438",
       "title": "Fujita freeness for projectivized toric vector bundles",
