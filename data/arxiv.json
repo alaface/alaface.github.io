@@ -1,7 +1,21 @@
 {
   "source": "https://arxiv.org/search/math?searchtype=author&query=Laface%2C+A&order=-announced_date_first&size=200",
-  "updated": "2026-09-22T11:52:10+00:00",
+  "updated": "2026-09-23T11:51:37+00:00",
   "items": [
+    {
+      "id": "2609.26521",
+      "title": "Irrational Seshadri constants from dihedral orbits",
+      "authors": [
+        "Antonio Laface",
+        "Luca Ugaglia"
+      ],
+      "year": "2026",
+      "published": "2026-09-22",
+      "updated": "2026-09-22",
+      "summary": "We construct an irrational one-point Seshadri constant on the blow-up $X_9$ of $\\mathbb{P}^2$ at nine very general points. The divisor $L=9H-3(E_1+\\cdots+E_5)-2(E_6+\\cdots+E_9)$ is ample and satisfies $\\varepsilon(L;x)=2\\sqrt{5}$ at a very general point $x\\in X_9$. To prove this, we establish that the Seshadri constant of $\\mathcal{O}_{\\mathbb{P}^1\\times\\mathbb{P}^1}(1,1)$ at ten very general points is $1/\\sqrt{5}$, completing the reflection approach proposed by Dionne and Roth for the ten-point case. We also prove that the same equality holds at a very general free orbit of a fixed dihedral group of order ten. This yields an irrational one-point Seshadri constant on the singular quotient surface. A plane model of its minimal resolution and a deformation of the blow-up centers then give the result on $X_9$.",
+      "journal": "",
+      "doi": ""
+    },
     {
       "id": "2609.23306",
       "title": "Semiampleness on Jacobian elliptic surfaces of Kodaira dimension one",
