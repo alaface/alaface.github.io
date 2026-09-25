@@ -2,8 +2,9 @@ import importlib.util
 import json
 from pathlib import Path
 import tempfile
+from types import SimpleNamespace
 import unittest
-from unittest.mock import patch
+from unittest.mock import MagicMock, Mock, patch
 
 ROOT = Path(__file__).resolve().parents[1]
 spec = importlib.util.spec_from_file_location('site_update', ROOT / 'scripts/update_site.py')
@@ -35,10 +36,89 @@ class MetadataTests(unittest.TestCase):
         error = m.HTTPError('https://export.arxiv.org/api/query', 406, 'Not Acceptable', {}, None)
         item = {'id': '1234.5678', 'published': '2026-01-01'}
         with patch.object(m, 'fetch', side_effect=error), patch.object(m, 'parse_arxiv', return_value=([item], 1, 1)), patch.object(m.time, 'sleep'), patch.object(m.subprocess, 'run') as run:
-            run.return_value.stdout = b'feed'
+            run.return_value.returncode = 0
+            run.return_value.stdout = b'feed\n200'
             self.assertEqual(m.get_arxiv(), [item])
             self.assertEqual(run.call_args.args[0][0], 'curl')
-            self.assertTrue(run.call_args.kwargs['check'])
+            self.assertIn('--write-out', run.call_args.args[0])
+
+    def test_arxiv_retries_406_before_using_a_fallback(self):
+        error = m.HTTPError('https://export.arxiv.org/api/query', 406, 'Not Acceptable', {}, None)
+        response = MagicMock()
+        response.__enter__.return_value.read.return_value = b'feed'
+        with patch.object(m, 'urlopen', side_effect=[error, response]) as request, patch.object(m.time, 'sleep') as sleep:
+            self.assertEqual(m.fetch('https://export.arxiv.org/api/query'), b'feed')
+            self.assertEqual(request.call_count, 2)
+            sleep.assert_called_once_with(3)
+
+    def test_arxiv_falls_back_on_server_errors_and_network_timeouts(self):
+        for error in (m.HTTPError('url', 503, 'Unavailable', {}, None), m.URLError('connection failed'), TimeoutError('timed out')):
+            with self.subTest(error=error), patch.object(m, 'fetch', side_effect=[error, b'feed']), patch.object(m.time, 'sleep'):
+                self.assertEqual(m.fetch_arxiv_page('https://export.arxiv.org/api/query'), b'feed')
+
+    def test_arxiv_tries_both_official_hosts_with_curl(self):
+        error = m.HTTPError('url', 406, 'Not Acceptable', {}, None)
+        with patch.object(m, 'fetch', side_effect=error), patch.object(m, 'fetch_arxiv_with_curl', side_effect=[error, b'feed']) as curl, patch.object(m.time, 'sleep'):
+            self.assertEqual(m.fetch_arxiv_page('https://export.arxiv.org/api/query'), b'feed')
+            self.assertEqual(curl.call_args.args[0], 'https://arxiv.org/api/query')
+
+    def test_arxiv_outage_preserves_diagnostic_http_status(self):
+        error = m.HTTPError('url', 406, 'Not Acceptable', {}, None)
+        result = SimpleNamespace(returncode=0, stdout=b'Temporarily unavailable\n503', stderr=b'')
+        with patch.object(m, 'fetch', side_effect=error), patch.object(m.subprocess, 'run', return_value=result), patch.object(m.time, 'sleep'):
+            with self.assertRaisesRegex(m.ArxivUnavailable, 'HTTP Error 503.*Temporarily unavailable'):
+                m.fetch_arxiv_page('https://export.arxiv.org/api/query')
+
+    def test_curl_transport_failure_keeps_stderr(self):
+        result = SimpleNamespace(returncode=28, stdout=b'\n000', stderr=b'Operation timed out')
+        with patch.object(m.subprocess, 'run', return_value=result):
+            with self.assertRaisesRegex(m.URLError, 'curl exit 28: Operation timed out'):
+                m.fetch_arxiv_with_curl('https://export.arxiv.org/api/query')
+
+    def test_arxiv_does_not_treat_bad_requests_as_temporary(self):
+        for status in (400, 401, 403, 404):
+            error = m.HTTPError('url', status, 'Invalid request', {}, None)
+            with self.subTest(status=status), patch.object(m, 'fetch', side_effect=error), patch.object(m, 'fetch_arxiv_with_curl') as curl:
+                with self.assertRaises(m.HTTPError):
+                    m.fetch_arxiv_page('https://export.arxiv.org/api/query')
+                curl.assert_not_called()
+
+    def test_arxiv_recent_cache_survives_temporary_outage_and_reports_it(self):
+        with tempfile.TemporaryDirectory() as tmp, patch.object(m, 'DATA', Path(tmp)):
+            saved_at = m.datetime.now(m.timezone.utc) - m.timedelta(days=2)
+            original = {'items': [{'id': '2609.26521'}], 'updated': saved_at.isoformat()}
+            path = Path(tmp) / 'arxiv.json'
+            path.write_text(json.dumps(original))
+            before = path.read_bytes()
+            summary = Path(tmp) / 'summary.md'
+            with patch.dict(m.os.environ, {'GITHUB_STEP_SUMMARY': str(summary)}):
+                snapshot, error = m.refresh('arxiv', Mock(side_effect=m.ArxivUnavailable('HTTP 406')), 'source')
+            self.assertEqual(snapshot, original)
+            self.assertIsNone(error)
+            self.assertEqual(path.read_bytes(), before)
+            self.assertIn(original['updated'], summary.read_text())
+
+    def test_arxiv_stale_empty_or_invalid_data_still_fail(self):
+        cases = [
+            (7, [{'id': 'saved'}], m.ArxivUnavailable('HTTP 406')),
+            (1, [], m.ArxivUnavailable('HTTP 406')),
+            (1, [{'id': 'saved'}], ValueError('Invalid arXiv feed')),
+            (1, [{'id': 'saved'}], RuntimeError('Programming error')),
+        ]
+        for days, items, failure in cases:
+            with self.subTest(days=days, failure=failure), tempfile.TemporaryDirectory() as tmp, patch.object(m, 'DATA', Path(tmp)):
+                saved_at = m.datetime.now(m.timezone.utc) - m.timedelta(days=days)
+                path = Path(tmp) / 'arxiv.json'
+                path.write_text(json.dumps({'items': items, 'updated': saved_at.isoformat()}))
+                before = path.read_bytes()
+                snapshot, error = m.refresh('arxiv', Mock(side_effect=failure), 'source')
+                self.assertTrue(error)
+                self.assertEqual(path.read_bytes(), before)
+
+    def test_arxiv_outage_without_cache_fails(self):
+        with tempfile.TemporaryDirectory() as tmp, patch.object(m, 'DATA', Path(tmp)):
+            with self.assertRaisesRegex(RuntimeError, 'no saved snapshot'):
+                m.refresh('arxiv', Mock(side_effect=m.ArxivUnavailable('HTTP 406')), 'source')
 
     def test_invalid_feed_is_not_an_empty_success(self):
         with self.assertRaises((ValueError, m.ET.ParseError)):

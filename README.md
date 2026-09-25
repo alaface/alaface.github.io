@@ -26,6 +26,8 @@ The script generates the home, publications, preprints and software pages. Edit 
 
 Each source is refreshed separately with retries and a timeout. Errors never erase a good snapshot or change its synchronization date. Successful sources still update; failures are reported in GitHub Actions. HTML is generated before publication, so visitors do not depend on live third-party requests, browser CORS support or JavaScript for the lists. JavaScript adds filtering and MathJax notation rendering.
 
+For arXiv, temporary HTTP errors (406, 408, 429 and 5xx) and network failures are retried through the two official Atom endpoints, with curl as a fallback. Requests are sequential and spaced by at least three seconds. If arXiv remains unavailable, a nonempty snapshot less than seven days old keeps the daily publication successful; the warning and original synchronization date remain visible in the Actions log and run summary. A snapshot aged seven days or more, missing data, invalid feeds and other errors still fail the workflow. HTTP status and response details are retained in the diagnostic message.
+
 ## Deployment
 
 The `Update and publish website` GitHub Actions workflow runs on changes to `main`, daily at 06:23 UTC and via **Run workflow**. GitHub schedules may be delayed and can be suspended after 60 days of repository inactivity. This is daily synchronization, not instantaneous streaming.
