@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Refresh public metadata and render static pages; no third-party dependencies."""
 import argparse
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from html import escape
+from io import BytesIO
 import json
 import os
 from pathlib import Path
@@ -13,7 +14,7 @@ import time
 import unicodedata
 from urllib.parse import urlencode, quote, urlparse
 from urllib.request import Request, urlopen
-from urllib.error import HTTPError
+from urllib.error import HTTPError, URLError
 import xml.etree.ElementTree as ET
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -22,6 +23,24 @@ AUTHOR = 'laface.antonio'
 ZB_PROFILE = 'https://zbmath.org/?q=ai%3Alaface.antonio'
 ARXIV_PROFILE = 'https://arxiv.org/search/math?searchtype=author&query=Laface%2C+A&order=-announced_date_first&size=200'
 NS = {'a': 'http://www.w3.org/2005/Atom', 'r': 'http://arxiv.org/schemas/atom', 'o': 'http://a9.com/-/spec/opensearch/1.1/'}
+ARXIV_MAX_STALE = timedelta(days=7)
+
+class ArxivUnavailable(RuntimeError):
+    """All official arXiv API requests failed temporarily."""
+
+def temporary_arxiv_error(error):
+    if isinstance(error, HTTPError):
+        return error.code in (406, 408, 429) or 500 <= error.code < 600
+    return isinstance(error, (URLError, TimeoutError, ConnectionError, subprocess.TimeoutExpired))
+
+def error_detail(error):
+    if isinstance(error, HTTPError) and error.fp is not None:
+        try:
+            detail = clean(error.read(400).decode('utf-8', errors='replace'))
+        except (OSError, ValueError):
+            return str(error)
+        return f'{error}: {detail}' if detail else str(error)
+    return str(error)
 
 def clean(value):
     return ' '.join(str(value or '').split())
@@ -50,7 +69,8 @@ def fetch(url):
             with urlopen(Request(url, headers=headers), timeout=30) as response:
                 return response.read()
         except HTTPError as error:
-            if error.code < 500 and error.code != 429:
+            arxiv_retry = urlparse(url).hostname in ('export.arxiv.org', 'arxiv.org') and error.code in (406, 408)
+            if error.code < 500 and error.code != 429 and not arxiv_retry:
                 raise
             if attempt == 2:
                 raise
@@ -133,30 +153,43 @@ def parse_arxiv(raw):
                       'doi': clean(entry.findtext('r:doi', '', NS))})
     return items, int(root.findtext('o:totalResults', '', NS)), len(root.findall('a:entry', NS))
 
+def fetch_arxiv_with_curl(url):
+    # Keep HTTP status and response details: CalledProcessError alone hides them.
+    result = subprocess.run(['curl', '--silent', '--show-error', '--location',
+                             '--max-time', '30', '--write-out', '\n%{http_code}', url],
+                            capture_output=True, check=False, timeout=35)
+    if result.returncode:
+        detail = clean(result.stderr.decode('utf-8', errors='replace'))
+        raise URLError(f'curl exit {result.returncode}: {detail}')
+    body, separator, status = result.stdout.rpartition(b'\n')
+    if not separator or not re.fullmatch(rb'\d{3}', status):
+        raise ValueError('curl returned no HTTP status for arXiv')
+    if int(status) != 200:
+        raise HTTPError(url, int(status), 'arXiv API request failed', {}, BytesIO(body))
+    return body
+
+def fetch_arxiv_page(url):
+    urls = [url, url.replace('https://export.arxiv.org/', 'https://arxiv.org/')]
+    errors = []
+    # The two official Atom endpoints sometimes differ in availability or HTTP
+    # negotiation. Keep requests sequential and at least three seconds apart.
+    for client, getter in (('urllib', fetch), ('curl', fetch_arxiv_with_curl)):
+        for endpoint in urls:
+            if errors:
+                time.sleep(3)
+            try:
+                return getter(endpoint)
+            except Exception as error:
+                if not temporary_arxiv_error(error):
+                    raise
+                errors.append(f'{urlparse(endpoint).hostname} ({client}): {error_detail(error)}')
+    raise ArxivUnavailable('; '.join(errors))
+
 def get_arxiv():
     items, start = [], 0
     while True:
         url = 'https://export.arxiv.org/api/query?' + urlencode({'search_query': 'au:Laface', 'start': start, 'max_results': 100, 'sortBy': 'submittedDate', 'sortOrder': 'descending'})
-        try:
-            raw = fetch(url)
-        except HTTPError as error:
-            if error.code != 406:
-                raise
-            # arXiv exposes the same public Atom API on both official hosts.
-            # Some export frontends reject otherwise valid content negotiation.
-            time.sleep(3)
-            try:
-                raw = fetch(url.replace('https://export.arxiv.org/', 'https://arxiv.org/'))
-            except HTTPError as alternate_error:
-                if alternate_error.code != 406:
-                    raise
-                # Use curl's native HTTP negotiation when arXiv rejects urllib.
-                # curl is preinstalled on GitHub's Ubuntu runner and macOS.
-                time.sleep(3)
-                result = subprocess.run(['curl', '--fail', '--silent', '--show-error',
-                                         '--location', '--max-time', '30', url],
-                                        capture_output=True, check=True, timeout=35)
-                raw = result.stdout
+        raw = fetch_arxiv_page(url)
         batch, total, count = parse_arxiv(raw)
         items.extend(batch)
         start += count
@@ -206,13 +239,25 @@ def refresh(name, getter, source, offline=False):
     try:
         return write_cache(name, getter(), source), None
     except Exception as error:
-        if isinstance(error, HTTPError):
-            detail = clean(error.read(400).decode('utf-8', errors='replace'))
-            error = RuntimeError(f'{error}: {detail}')
-        print(f'::warning::{name}: {error}; keeping the last successful snapshot.', file=sys.stderr)
+        detail = error_detail(error)
+        print(f'::warning::{name}: {detail}; keeping the last successful snapshot.', file=sys.stderr)
         if not path.exists():
             raise RuntimeError(f'{name}: no saved snapshot available') from error
-        return json.loads(path.read_text()), str(error)
+        snapshot = json.loads(path.read_text())
+        # A short arXiv outage must not fail an otherwise healthy publication.
+        # Parsing/programming errors and an outage lasting a week still fail CI.
+        if name == 'arxiv' and isinstance(error, ArxivUnavailable) and snapshot.get('items'):
+            saved_at = datetime.fromisoformat(snapshot['updated'])
+            age = datetime.now(timezone.utc) - saved_at
+            if timedelta(0) <= age < ARXIV_MAX_STALE:
+                print(f'arxiv: using saved data from {snapshot["updated"]}; will retry on the next run.')
+                summary = os.environ.get('GITHUB_STEP_SUMMARY')
+                if summary:
+                    with open(summary, 'a') as output:
+                        output.write(f'### arXiv temporarily unavailable\n\nUsing the last successful snapshot from {snapshot["updated"]}. '
+                                     'The next scheduled run will retry. An outage lasting seven days fails the workflow.\n\n')
+                return snapshot, None
+        return snapshot, detail
 
 def page(title, active, body, math=False):
     nav = [('papers', 'Publications'), ('arxiv', 'Preprints'), ('software', 'Software'), ('book', 'Book')]
