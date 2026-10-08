@@ -1,6 +1,6 @@
 {
   "source": "https://arxiv.org/search/math?searchtype=author&query=Laface%2C+A&order=-announced_date_first&size=200",
-  "updated": "2026-10-07T13:37:45+00:00",
+  "updated": "2026-10-08T11:34:02+00:00",
   "items": [
     {
       "id": "2609.26521",
@@ -146,7 +146,7 @@
       ],
       "year": "2024",
       "published": "2024-11-26",
-      "updated": "2026-05-21",
+      "updated": "2026-10-07",
       "summary": "We compute the Cox ring of an embedded variety $X \\subseteq Z$ within a Mori dream space, under the assumption that the pullback map induces an isomorphism at the level of divisor class groups. We show that the Cox ring of $X$ is the intersection of finitely many localizations of a quotient image of the Cox ring of $Z$. As a consequence, we provide an algorithm that terminates if and only if the Cox ring of $X$ is finitely generated, thereby generalizing previous works on the subject. We apply these results to compute the Cox ring of hypersurfaces in smooth projective toric varieties.",
       "journal": "",
       "doi": ""
