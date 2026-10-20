@@ -268,7 +268,8 @@ def language_picker(lang, active):
     flags, options = [], []
     for code, label in LANGUAGES.items():
         flag = f'<img src="/assets/flags/{code}.svg" width="24" height="16" alt="">'
-        flags.append('<span class="language-flag' + (' is-current' if code == lang else '') + f'">{flag}</span>')
+        if code == lang:
+            flags.append(f'<span class="language-flag">{flag}</span>')
         current = ' aria-current="true"' if code == lang else ''
         check = '<span class="language-check" aria-hidden="true">✓</span>' if code == lang else ''
         options.append(f'<li><a href="{local_path(code, active)}" lang="{code}" hreflang="{code}"{current}>{flag}<span>{label}</span>{check}</a></li>')
