@@ -15,7 +15,8 @@ if (search) {
     });
     document.querySelectorAll('[data-archive]').forEach(archive => { archive.open = terms.length > 0; });
     const count = document.querySelector('[data-count]');
-    count.textContent = `${visible} of ${entries.length} ${count.dataset.itemLabel || 'entries'}`;
+    const template = count.dataset.countTemplate || 'Showing {visible} of {total}';
+    count.textContent = template.replace('{visible}', visible).replace('{total}', entries.length);
     document.querySelector('[data-empty]').hidden = visible > 0;
   });
   document.querySelector('[data-reset-filter]')?.addEventListener('click', () => {

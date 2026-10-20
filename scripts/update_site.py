@@ -18,6 +18,8 @@ from urllib.error import HTTPError, URLError
 import xml.etree.ElementTree as ET
 
 ROOT = Path(__file__).resolve().parents[1]
+TRANSLATIONS = json.loads((ROOT / 'scripts/translations.json').read_text(encoding='utf-8'))
+LANGUAGES = {'en': 'English', 'es': 'Español', 'ru': 'Русский'}
 DATA = ROOT / 'data'
 AUTHOR = 'laface.antonio'
 ZB_PROFILE = 'https://zbmath.org/?q=ai%3Alaface.antonio'
@@ -259,23 +261,37 @@ def refresh(name, getter, source, offline=False):
                 return snapshot, None
         return snapshot, detail
 
-def page(title, active, body, math=False):
-    nav = [('papers', 'Publications'), ('arxiv', 'Preprints'), ('software', 'Software'), ('book', 'Book')]
-    links = ''.join(f'<a href="/{slug}/"' + (' aria-current="page"' if slug == active else '') + f'>{label}</a>' for slug, label in nav)
+def local_path(lang, slug=''):
+    return f'/{lang}/' + (f'{slug}/' if slug else '')
+
+def page(title, active, body, math=False, lang='en'):
+    t = TRANSLATIONS[lang]
+    links = ''.join(f'<a href="{local_path(lang, slug)}"' + (' aria-current="page"' if slug == active else '') + f'>{t[slug]}</a>' for slug in ('papers', 'arxiv', 'software', 'book'))
+    switcher = ''.join(f'<a href="{local_path(code, active)}" lang="{code}" hreflang="{code}"' + (' aria-current="true"' if code == lang else '') + f'>{label}</a>' for code, label in LANGUAGES.items())
+    alternates = ''.join(f'<link rel="alternate" hreflang="{code}" href="https://alaface.github.io{local_path(code, active)}">' for code in LANGUAGES)
+    default_path = f'/{active}/' if active else '/'
     math_scripts = '<script src="/assets/math.js"></script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-chtml.js"></script>' if math else ''
     return f'''<!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>{esc(title)} — Antonio Laface</title><meta name="description" content="Antonio Laface, Full Professor of Mathematics at Universidad de Concepción. Publications, preprints and mathematical software.">
-<link rel="stylesheet" href="/assets/css/style.css">{math_scripts}<script defer src="/assets/filter.js"></script></head>
-<body><a class="skip-link" href="#main">Skip to content</a><header><nav aria-label="Main navigation"><a class="brand" href="/">Antonio Laface</a>{links}</nav></header>
+<html lang="{lang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{esc(title)} — Antonio Laface</title><meta name="description" content="{esc(t['description'])}">
+<link rel="canonical" href="https://alaface.github.io{local_path(lang, active)}">{alternates}<link rel="alternate" hreflang="x-default" href="https://alaface.github.io{default_path}">
+<script src="/assets/language.js"></script><link rel="stylesheet" href="/assets/css/style.css">{math_scripts}<script defer src="/assets/filter.js"></script></head>
+<body><a class="skip-link" href="#main">{t['skip']}</a><header><nav aria-label="{t['navigation']}"><a class="brand" href="{local_path(lang)}">Antonio Laface</a>{links}<div class="language-switcher" role="group" aria-label="{t['language']}">{switcher}</div></nav></header>
 <main id="main">{body}</main><footer><span>Antonio Laface · Universidad de Concepción</span><a href="mailto:antonio.laface@gmail.com">antonio.laface@gmail.com</a></footer></body></html>\n'''.replace('><', '>\n<')
 
-def updated(data):
-    date = datetime.fromisoformat(data['updated']).strftime('%d %B %Y, %H:%M UTC')
-    return f'<p class="meta">Updated daily · Last synchronized <time datetime="{esc(data["updated"])}">{date}</time></p>'
+def updated(data, lang='en'):
+    stamp = datetime.fromisoformat(data['updated']).astimezone(timezone.utc)
+    # Numeric dates avoid relying on the runner's installed system locales.
+    date = stamp.strftime('%Y-%m-%d, %H:%M UTC' if lang == 'en' else '%d/%m/%Y, %H:%M UTC' if lang == 'es' else '%d.%m.%Y, %H:%M UTC')
+    return f'<p class="meta">{TRANSLATIONS[lang]["updated"]} <time datetime="{esc(data["updated"])}">{date}</time></p>'
 
-def search_box(count, label):
-    return f'<label class="filter"><span>{label}</span><input type="search" data-filter placeholder="Type to filter…"></label><p class="count" data-count aria-live="polite">{count} entries</p><p data-empty hidden>No matching entries.</p>'
+def search_box(count, label, lang='en', repositories=False):
+    t = TRANSLATIONS[lang]
+    field = f'<label class="filter"><span>{label}</span><input type="search" data-filter placeholder="{t["filter"]}"></label>'
+    if repositories:
+        field = f'<div class="repository-tools">{field}<button class="filter-reset" type="button" data-reset-filter>{t["reset"]}</button></div>'
+    count_key, empty_key = ('repositories_count', 'repositories_empty') if repositories else ('count', 'empty')
+    return field + f'<p class="count" data-count data-count-template="{esc(t["filtered"])}" aria-live="polite">{t[count_key].format(count=count)}</p><p data-empty hidden>{t[empty_key]}</p>'
 
 def link(url, label):
     url = safe_url(url)
@@ -290,11 +306,12 @@ def publication_entry(p):
     searchable = ' '.join([p['title'], *p['authors'], p['year'], p['citation']])
     return f'<li class="entry" data-search="{esc(searchable)}"><h3>{link(doi or p["url"], p["title"])}</h3><p>{esc(", ".join(p["authors"]))}</p><p>{esc(p["citation"])}</p><div class="entry-links">{"".join(links)}</div></li>'
 
-def arxiv_entry(p):
+def arxiv_entry(p, lang='en'):
+    t = TRANSLATIONS[lang]
     url = 'https://arxiv.org/abs/' + p['id']
     searchable = ' '.join([p['title'], *p['authors'], p['year'], p['id']])
     journal = f'<p>{esc(p["journal"])}</p>' if p['journal'] else ''
-    return f'<li class="entry" data-search="{esc(searchable)}"><h3>{link(url, p["title"])}</h3><p>{esc(", ".join(p["authors"]))}</p><p>arXiv:{esc(p["id"])} · Submitted {esc(p["published"])} · Revised {esc(p["updated"])}</p>{journal}<div class="entry-links">{link(url, "arXiv")}{link("https://arxiv.org/pdf/" + p["id"], "PDF")}</div><details><summary>Abstract</summary><p>{esc(p["summary"])}</p></details></li>'
+    return f'<li class="entry" data-search="{esc(searchable)}"><h3>{link(url, p["title"])}</h3><p>{esc(", ".join(p["authors"]))}</p><p>arXiv:{esc(p["id"])} · {t["submitted"]} {esc(p["published"])} · {t["revised"]} {esc(p["updated"])}</p>{journal}<div class="entry-links">{link(url, "arXiv")}{link("https://arxiv.org/pdf/" + p["id"], "PDF")}</div><details><summary>{t["abstract"]}</summary><p>{esc(p["summary"])}</p></details></li>'
 
 def groups(items, renderer):
     years = sorted({p['year'] for p in items}, reverse=True)
@@ -318,36 +335,51 @@ def recent_preprints(items, today=None):
         cutoff = today.replace(year=today.year - 5, day=28)
     return [p for p in items if cutoff <= date.fromisoformat(p['published']) <= today]
 
+def write_page(lang, slug, title, body, math=False):
+    html = page(title, slug, body, math, lang)
+    target = ROOT / lang / slug / 'index.html'
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(html, encoding='utf-8')
+    # Preserve old URLs and readable English content when JavaScript is disabled.
+    if lang == 'en':
+        legacy = ROOT / slug / 'index.html'
+        legacy.parent.mkdir(parents=True, exist_ok=True)
+        legacy.write_text(html, encoding='utf-8')
+
 def render(publications, arxiv, repositories):
-    home = '''<section class="hero"><div><p class="eyebrow">Mathematics · Universidad de Concepción</p><h1>Antonio Laface</h1><p class="position">Full Professor</p><p class="affiliation"><a href="https://dmat-udec.cl/">Departamento de Matemática</a><br><a href="https://cfm.udec.cl/">Facultad de Ciencias Físicas y Matemáticas</a><br><a href="https://www.udec.cl/">Universidad de Concepción</a>, Chile</p><p class="contact"><a href="mailto:antonio.laface@gmail.com">antonio.laface@gmail.com</a><br><a href="tel:+56412203173">+56 41 220 3173</a><br>Casilla 160-C, Concepción, Chile</p><p><a href="https://scholar.google.com/citations?user=ejWJMPkAAAAJ&amp;hl=en">Google Scholar ↗</a></p></div><figure><img src="/assets/home.jpg" width="600" height="449" alt="Stingrays swimming in clear turquoise water" fetchpriority="high"></figure></section>
-<section class="section-links" aria-label="Explore"><a href="/papers/"><strong>Publications ↗</strong><span>Articles, chapters and books</span></a><a href="/arxiv/"><strong>Preprints ↗</strong><span>Recent manuscripts on arXiv</span></a><a href="/software/"><strong>Software ↗</strong><span>Code and computational resources</span></a><a href="/book/"><strong>Cox Rings ↗</strong><span>Cambridge Studies in Advanced Mathematics</span></a></section>
-<p class="meta"><a href="/halphen-surfaces/">Explore the catalogue of extremal Halphen surfaces →</a></p>'''
-    (ROOT / 'index.html').write_text(page('Home', '', home))
-    pubs = publications['items']
-    body = '<div class="page-heading"><p class="eyebrow">Research</p><h1>Publications</h1><p class="lead">Articles, book chapters and books, from most recent to earliest.</p>' + updated(publications) + f'<div class="source-links">{link(ZB_PROFILE, "Author profile on zbMATH Open")}</div></div>'
-    body += search_box(len(pubs), 'Search publications by title, author or year') + groups(pubs, publication_entry)
-    body += '<p class="source-note">Bibliographic metadata: ' + link(ZB_PROFILE, 'zbMATH Open') + ' / FIZ Karlsruhe, under ' + link('https://creativecommons.org/licenses/by-sa/4.0/', 'CC BY-SA 4.0') + '. Metadata selected and reformatted; no reviews are reproduced.</p>'
-    (ROOT / 'papers/index.html').write_text(page('Publications', 'papers', body, True))
+    pubs, repos = publications['items'], repositories['items']
     preprints, published = partition_arxiv(arxiv['items'], pubs)
     preprints = recent_preprints(preprints)
-    body = '<div class="page-heading"><p class="eyebrow">Research</p><h1>Preprints</h1><p class="lead">Preprints from the last five years and the published arXiv archive.</p>' + updated(arxiv) + f'<div class="source-links">{link(ARXIV_PROFILE, "All submissions on arXiv")}{link("https://alaface.github.io/papers/", "Publications")}</div></div>'
-    body += search_box(len(preprints) + len(published), 'Search manuscripts by title, author, year or arXiv ID')
-    body += f'<h2>Preprints <span class="count">({len(preprints)})</span></h2>' + groups(preprints, arxiv_entry)
-    body += f'<details data-archive><summary>Published work on arXiv ({len(published)})</summary>' + groups(published, arxiv_entry) + '</details>'
-    body += '<p class="source-note">Source: arXiv. Preprints are dated by their first arXiv submission. Publication status follows the available bibliographic records.</p>'
-    (ROOT / 'arxiv/index.html').write_text(page('Preprints', 'arxiv', body, True))
-    repos = repositories['items']
-    body = f'<div class="page-heading"><p class="eyebrow">Computational resources</p><h1>Software</h1><p class="lead">All {len(repos)} public repositories on <a href="https://github.com/alaface?tab=repositories">GitHub</a>, in alphabetical order.</p></div>'
-    body += f'<div class="repository-tools"><label class="filter"><span>Search repositories</span><input type="search" data-filter placeholder="Type to filter…"></label><button class="filter-reset" type="button" data-reset-filter>Show all repositories</button></div><p class="count" data-count data-item-label="repositories" aria-live="polite">{len(repos)} repositories</p><p data-empty hidden>No matching repositories.</p><div class="repository-list">'
-    for r in repos:
-        badges = (' · Fork' if r['fork'] else '') + (' · Archived' if r['archived'] else '')
-        description = f'<p>{esc(r["description"])}</p>' if r['description'] else ''
-        body += f'<article class="repository" data-search="{esc(r["name"] + " " + r["description"])}"><h3>{link(r["url"], r["name"])} ↗</h3>{description}<p class="meta">GitHub{badges}</p></article>'
-    body += '</div>'
-    body += updated(repositories)
-    body += '<h2>Catalogues and supporting material</h2><section class="feature"><div><h3>Extremal Halphen surfaces</h3><p>A catalogue of 26 explicit plane models, with marked points, component classes and verification notes.</p><a href="/halphen-surfaces/">Open the catalogue →</a></div><div><h3>Jacobian elliptic surfaces</h3><p>Exact computations and verification material for semiampleness on Jacobian elliptic surfaces.</p><a href="https://github.com/alaface/jacobian-semiampleness">View the project →</a></div></section>'
-    (ROOT / 'software/index.html').write_text(page('Software', 'software', body))
-    print(f'Rendered {len(pubs)} publications, {len(preprints)} preprints, {len(published)} archived arXiv papers and {len(repos)} public repositories.')
+    for lang in LANGUAGES:
+        t = TRANSLATIONS[lang]
+        home = f'''<section class="hero"><div><p class="eyebrow">{t['mathematics']} · Universidad de Concepción</p><h1>Antonio Laface</h1><p class="position">{t['position']}</p><p class="affiliation"><a href="https://dmat-udec.cl/">{t['department']}</a><br><a href="https://cfm.udec.cl/">{t['faculty']}</a><br><a href="https://www.udec.cl/">Universidad de Concepción</a>, Chile</p><p class="contact"><a href="mailto:antonio.laface@gmail.com">antonio.laface@gmail.com</a><br><a href="tel:+56412203173">+56 41 220 3173</a><br>Casilla 160-C, Concepción, Chile</p><p><a href="https://scholar.google.com/citations?user=ejWJMPkAAAAJ&amp;hl={lang}">Google Scholar ↗</a></p></div><figure><img src="/assets/home.jpg" width="600" height="449" alt="{t['photo']}" fetchpriority="high"></figure></section>
+<section class="section-links" aria-label="{t['explore']}"><a href="{local_path(lang, 'papers')}"><strong>{t['papers']} ↗</strong><span>{t['publications_teaser']}</span></a><a href="{local_path(lang, 'arxiv')}"><strong>{t['arxiv']} ↗</strong><span>{t['preprints_teaser']}</span></a><a href="{local_path(lang, 'software')}"><strong>{t['software']} ↗</strong><span>{t['software_teaser']}</span></a><a href="{local_path(lang, 'book')}"><strong>Cox Rings ↗</strong><span>Cambridge Studies in Advanced Mathematics</span></a></section>
+<p class="meta"><a href="/halphen-surfaces/">{t['catalogue_teaser']}</a></p>'''
+        write_page(lang, '', t['home'], home)
+        body = f'<div class="page-heading"><p class="eyebrow">{t["research"]}</p><h1>{t["papers"]}</h1><p class="lead">{t["publications_intro"]}</p>' + updated(publications, lang) + f'<div class="source-links">{link(ZB_PROFILE, t["profile"])}</div></div>'
+        body += search_box(len(pubs), t['search_publications'], lang) + groups(pubs, publication_entry)
+        body += f'<p class="source-note">{t["bibliography"]} ' + link(ZB_PROFILE, 'zbMATH Open') + f' / FIZ Karlsruhe, {t["license"]} ' + link('https://creativecommons.org/licenses/by-sa/4.0/', 'CC BY-SA 4.0') + f'. {t["metadata_note"]}</p>'
+        write_page(lang, 'papers', t['papers'], body, True)
+        body = f'<div class="page-heading"><p class="eyebrow">{t["research"]}</p><h1>{t["arxiv"]}</h1><p class="lead">{t["preprints_intro"]}</p>' + updated(arxiv, lang) + f'<div class="source-links">{link(ARXIV_PROFILE, t["all_arxiv"])}<a href="{local_path(lang, "papers")}">{t["papers"]}</a></div><p class="meta">{t["original_language"]}</p></div>'
+        body += search_box(len(preprints) + len(published), t['search_preprints'], lang)
+        body += f'<h2>{t["arxiv"]} <span class="count">({len(preprints)})</span></h2>' + groups(preprints, lambda p: arxiv_entry(p, lang))
+        body += f'<details data-archive><summary>{t["archive"]} ({len(published)})</summary>' + groups(published, lambda p: arxiv_entry(p, lang)) + '</details>'
+        body += f'<p class="source-note">{t["arxiv_note"]}</p>'
+        write_page(lang, 'arxiv', t['arxiv'], body, True)
+        intro = t['repositories_intro'].format(count=len(repos), github=link('https://github.com/alaface?tab=repositories', 'GitHub'))
+        body = f'<div class="page-heading"><p class="eyebrow">{t["resources"]}</p><h1>{t["software"]}</h1><p class="lead">{intro}</p></div>'
+        body += search_box(len(repos), t['search_repositories'], lang, repositories=True) + '<div class="repository-list">'
+        for r in repos:
+            badges = (' · ' + t['fork'] if r['fork'] else '') + (' · ' + t['archived'] if r['archived'] else '')
+            description = f'<p>{esc(r["description"])}</p>' if r['description'] else ''
+            body += f'<article class="repository" data-search="{esc(r["name"] + " " + r["description"])}"><h3>{link(r["url"], r["name"])} ↗</h3>{description}<p class="meta">GitHub{badges}</p></article>'
+        body += '</div>' + updated(repositories, lang)
+        body += f'<h2>{t["support"]}</h2><section class="feature"><div><h3>{t["halphen"]}</h3><p>{t["halphen_intro"]}</p><a href="/halphen-surfaces/">{t["open_catalogue"]}</a></div><div><h3>{t["jacobian"]}</h3><p>{t["jacobian_intro"]}</p><a href="https://github.com/alaface/jacobian-semiampleness">{t["project"]}</a></div></section>'
+        write_page(lang, 'software', t['software'], body)
+        body = f'<p class="eyebrow">Cambridge Studies in Advanced Mathematics · 144</p><h1><em>Cox Rings</em></h1><p class="lead">{t["book_authors"]}</p><div class="card"><h2>Cambridge University Press, 2015</h2><p>{t["book_intro"]}</p><div class="source-links">{link("https://doi.org/10.1017/CBO9781139175852", t["publisher"])}{link("https://arxiv.org/abs/1003.4229", "arXiv")}</div></div>'
+        write_page(lang, 'book', 'Cox Rings', body)
+    print(f'Rendered {len(pubs)} publications, {len(preprints)} preprints, {len(published)} archived arXiv papers and {len(repos)} public repositories in {len(LANGUAGES)} languages.')
+
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
