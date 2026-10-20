@@ -264,10 +264,21 @@ def refresh(name, getter, source, offline=False):
 def local_path(lang, slug=''):
     return f'/{lang}/' + (f'{slug}/' if slug else '')
 
+def language_picker(lang, active):
+    flags, options = [], []
+    for code, label in LANGUAGES.items():
+        flag = f'<img src="/assets/flags/{code}.svg" width="24" height="16" alt="">'
+        flags.append('<span class="language-flag' + (' is-current' if code == lang else '') + f'">{flag}</span>')
+        current = ' aria-current="true"' if code == lang else ''
+        check = '<span class="language-check" aria-hidden="true">✓</span>' if code == lang else ''
+        options.append(f'<li><a href="{local_path(code, active)}" lang="{code}" hreflang="{code}"{current}>{flag}<span>{label}</span>{check}</a></li>')
+    label = esc(TRANSLATIONS[lang]['language'] + ': ' + LANGUAGES[lang])
+    return f'<details class="language-picker"><summary aria-label="{label}"><span class="language-flags" aria-hidden="true">{"".join(flags)}</span><span class="language-chevron" aria-hidden="true">⌄</span></summary><ul class="language-options" aria-label="{esc(TRANSLATIONS[lang]["language"])}">{"".join(options)}</ul></details>'
+
 def page(title, active, body, math=False, lang='en'):
     t = TRANSLATIONS[lang]
     links = ''.join(f'<a href="{local_path(lang, slug)}"' + (' aria-current="page"' if slug == active else '') + f'>{t[slug]}</a>' for slug in ('papers', 'arxiv', 'software', 'book'))
-    switcher = ''.join(f'<a href="{local_path(code, active)}" lang="{code}" hreflang="{code}"' + (' aria-current="true"' if code == lang else '') + f'>{label}</a>' for code, label in LANGUAGES.items())
+    switcher = language_picker(lang, active)
     alternates = ''.join(f'<link rel="alternate" hreflang="{code}" href="https://alaface.github.io{local_path(code, active)}">' for code in LANGUAGES)
     default_path = f'/{active}/' if active else '/'
     math_scripts = '<script src="/assets/math.js"></script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-chtml.js"></script>' if math else ''
@@ -276,7 +287,7 @@ def page(title, active, body, math=False, lang='en'):
 <title>{esc(title)} — Antonio Laface</title><meta name="description" content="{esc(t['description'])}">
 <link rel="canonical" href="https://alaface.github.io{local_path(lang, active)}">{alternates}<link rel="alternate" hreflang="x-default" href="https://alaface.github.io{default_path}">
 <script src="/assets/language.js"></script><link rel="stylesheet" href="/assets/css/style.css">{math_scripts}<script defer src="/assets/filter.js"></script></head>
-<body><a class="skip-link" href="#main">{t['skip']}</a><header><nav aria-label="{t['navigation']}"><a class="brand" href="{local_path(lang)}">Antonio Laface</a>{links}<div class="language-switcher" role="group" aria-label="{t['language']}">{switcher}</div></nav></header>
+<body><a class="skip-link" href="#main">{t['skip']}</a><header><nav aria-label="{t['navigation']}"><a class="brand" href="{local_path(lang)}">Antonio Laface</a>{links}{switcher}</nav></header>
 <main id="main">{body}</main><footer><span>Antonio Laface · Universidad de Concepción</span><a href="mailto:antonio.laface@gmail.com">antonio.laface@gmail.com</a></footer></body></html>\n'''.replace('><', '>\n<')
 
 def updated(data, lang='en'):
