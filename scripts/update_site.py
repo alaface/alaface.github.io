@@ -19,7 +19,7 @@ import xml.etree.ElementTree as ET
 
 ROOT = Path(__file__).resolve().parents[1]
 TRANSLATIONS = json.loads((ROOT / 'scripts/translations.json').read_text(encoding='utf-8'))
-LANGUAGES = {'en': 'English', 'es': 'Español', 'ru': 'Русский'}
+LANGUAGES = {'en': 'English', 'es': 'Español', 'ru': 'Русский', 'de': 'Deutsch'}
 DATA = ROOT / 'data'
 AUTHOR = 'laface.antonio'
 ZB_PROFILE = 'https://zbmath.org/?q=ai%3Alaface.antonio'

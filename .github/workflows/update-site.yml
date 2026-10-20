@@ -39,7 +39,7 @@ jobs:
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add data index.html papers/index.html arxiv/index.html software/index.html book/index.html en es ru
+          git add data index.html papers/index.html arxiv/index.html software/index.html book/index.html en es ru de
           if ! git diff --cached --quiet; then
             git commit -m 'Update publications, preprints and public repositories'
             git push
@@ -64,7 +64,7 @@ jobs:
         run: |
           mkdir _site
           cp index.html .nojekyll _site/
-          cp -R assets papers arxiv software book halphen-surfaces recipes en es ru _site/
+          cp -R assets papers arxiv software book halphen-surfaces recipes en es ru de _site/
       - name: Upload website
         if: steps.pages.outputs.mode == 'workflow'
         uses: actions/upload-pages-artifact@v3

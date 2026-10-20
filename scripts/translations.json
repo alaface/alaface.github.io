@@ -43,6 +43,28 @@
     "jacobian_intro": "Cálculos exactos y material de verificación para la semiamplitud en superficies elípticas jacobianas.", "project": "Ver el proyecto →",
     "book_authors": "Ivan Arzhantsev, Ulrich Derenthal, Jürgen Hausen y Antonio Laface", "book_intro": "Una introducción a los anillos de Cox y sus aplicaciones en geometría algebraica.", "publisher": "Ver el libro en Cambridge University Press →"
   },
+  "de": {
+    "home": "Startseite", "papers": "Publikationen", "arxiv": "Preprints", "software": "Software", "book": "Buch",
+    "description": "Antonio Laface, Professor für Mathematik an der Universidad de Concepción. Publikationen, Preprints und mathematische Software.",
+    "skip": "Zum Inhalt springen", "navigation": "Hauptnavigation", "language": "Sprache", "explore": "Bereiche",
+    "mathematics": "Mathematik", "position": "Professor", "department": "Fachbereich Mathematik", "faculty": "Fakultät für Physik und Mathematik",
+    "photo": "Stachelrochen in klarem türkisfarbenem Wasser",
+    "publications_teaser": "Artikel, Buchkapitel und Bücher", "preprints_teaser": "Aktuelle Arbeiten auf arXiv", "software_teaser": "Code und Ressourcen für Berechnungen",
+    "catalogue_teaser": "Katalog der extremalen Halphen-Flächen ansehen →", "research": "Forschung",
+    "publications_intro": "Artikel, Buchkapitel und Bücher, von den neuesten zu den ältesten.",
+    "updated": "Tägliche Aktualisierung · Zuletzt synchronisiert", "profile": "Autorenprofil auf zbMATH Open",
+    "search_publications": "Publikationen nach Titel, Autor oder Jahr durchsuchen", "filter": "Zum Filtern Text eingeben…", "count": "Einträge: {count}", "filtered": "{visible} von {total} angezeigt", "empty": "Keine passenden Einträge gefunden.",
+    "bibliography": "Bibliografische Metadaten:", "license": "unter der Lizenz", "metadata_note": "Die Metadaten wurden ausgewählt und neu formatiert; Rezensionen werden nicht wiedergegeben.",
+    "preprints_intro": "Preprints der letzten fünf Jahre und das Archiv veröffentlichter Arbeiten auf arXiv.", "all_arxiv": "Alle Arbeiten auf arXiv",
+    "search_preprints": "Manuskripte nach Titel, Autor, Jahr oder arXiv-ID durchsuchen", "archive": "Veröffentlichte Arbeiten auf arXiv", "submitted": "Eingereicht", "revised": "Überarbeitet", "abstract": "Zusammenfassung",
+    "arxiv_note": "Quelle: arXiv. Das Datum eines Preprints entspricht seiner ersten Einreichung bei arXiv. Der Publikationsstatus richtet sich nach den verfügbaren bibliografischen Angaben.",
+    "original_language": "Titel und Zusammenfassungen werden in der Originalsprache angezeigt.",
+    "resources": "Ressourcen für Berechnungen", "repositories_intro": "Alle {count} öffentlichen Repositories auf {github}, in alphabetischer Reihenfolge.", "search_repositories": "Repositories durchsuchen", "reset": "Alle Repositories anzeigen", "repositories_count": "Repositories: {count}", "repositories_empty": "Keine passenden Repositories gefunden.",
+    "fork": "Fork", "archived": "Archiviert", "support": "Kataloge und ergänzende Materialien", "halphen": "Extremale Halphen-Flächen",
+    "halphen_intro": "Ein Katalog von 26 expliziten ebenen Modellen mit markierten Punkten, Komponentenklassen und Hinweisen zur Überprüfung.", "open_catalogue": "Katalog öffnen →", "jacobian": "Jacobische elliptische Flächen",
+    "jacobian_intro": "Exakte Berechnungen und Materialien zur Überprüfung der Semiamplizität auf jacobischen elliptischen Flächen.", "project": "Projekt ansehen →",
+    "book_authors": "Ivan Arzhantsev, Ulrich Derenthal, Jürgen Hausen und Antonio Laface", "book_intro": "Eine Einführung in Cox-Ringe und ihre Anwendungen in der algebraischen Geometrie.", "publisher": "Buch bei Cambridge University Press ansehen →"
+  },
   "ru": {
     "home": "Главная", "papers": "Публикации", "arxiv": "Препринты", "software": "Программы", "book": "Книга",
     "description": "Антонио Лафаче, профессор математики Университета Консепсьона. Публикации, препринты и математические программы.",

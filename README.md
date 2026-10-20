@@ -15,7 +15,7 @@ python -m unittest discover -s tests -v
 python -m http.server 8000              # preview at http://localhost:8000
 ```
 
-The script generates the home, publications, preprints, software and book pages in English (`/en/`), Spanish (`/es/`) and Russian (`/ru/`). Edit their templates in `scripts/update_site.py` and the matching text in `scripts/translations.json`; shared styles live in `assets/css/style.css`. Other research pages are independent.
+The script generates the home, publications, preprints, software and book pages in English (`/en/`), Spanish (`/es/`), Russian (`/ru/`) and German (`/de/`). Edit their templates in `scripts/update_site.py` and the matching text in `scripts/translations.json`; shared styles live in `assets/css/style.css`. Other research pages are independent.
 
 Each page has links to the same page in the other languages, localized navigation, accessible labels, filters, dates and metadata. Language links work without JavaScript. The original unprefixed URLs retain readable English HTML; `assets/language.js` redirects them to the saved language, the first supported browser language, or English. Explicit language URLs always take precedence, and local storage is optional. Daily updates regenerate every language from the same metadata snapshots. Publication titles, abstracts, repository descriptions and linked research resources retain their original language.
 
