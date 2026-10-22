@@ -19,7 +19,8 @@ import xml.etree.ElementTree as ET
 
 ROOT = Path(__file__).resolve().parents[1]
 TRANSLATIONS = json.loads((ROOT / 'scripts/translations.json').read_text(encoding='utf-8'))
-LANGUAGES = {'en': 'English', 'es': 'Español', 'ru': 'Русский', 'de': 'Deutsch'}
+LANGUAGES = {'en': 'English', 'es': 'Español', 'ru': 'Русский', 'de': 'Deutsch', 'zh': '简体中文'}
+LANGUAGE_TAGS = {'zh': 'zh-Hans'}
 DATA = ROOT / 'data'
 AUTHOR = 'laface.antonio'
 ZB_PROFILE = 'https://zbmath.org/?q=ai%3Alaface.antonio'
@@ -272,7 +273,8 @@ def language_picker(lang, active):
             flags.append(f'<span class="language-flag">{flag}</span>')
         current = ' aria-current="true"' if code == lang else ''
         check = '<span class="language-check" aria-hidden="true">✓</span>' if code == lang else ''
-        options.append(f'<li><a href="{local_path(code, active)}" lang="{code}" hreflang="{code}"{current}>{flag}<span>{label}</span>{check}</a></li>')
+        tag = LANGUAGE_TAGS.get(code, code)
+        options.append(f'<li><a href="{local_path(code, active)}" lang="{tag}" hreflang="{tag}"{current}>{flag}<span>{label}</span>{check}</a></li>')
     label = esc(TRANSLATIONS[lang]['language'] + ': ' + LANGUAGES[lang])
     return f'<details class="language-picker"><summary aria-label="{label}"><span class="language-flags" aria-hidden="true">{"".join(flags)}</span><span class="language-chevron" aria-hidden="true">⌄</span></summary><ul class="language-options" aria-label="{esc(TRANSLATIONS[lang]["language"])}">{"".join(options)}</ul></details>'
 
@@ -280,11 +282,11 @@ def page(title, active, body, math=False, lang='en'):
     t = TRANSLATIONS[lang]
     links = ''.join(f'<a href="{local_path(lang, slug)}"' + (' aria-current="page"' if slug == active else '') + f'>{t[slug]}</a>' for slug in ('papers', 'arxiv', 'software', 'book'))
     switcher = language_picker(lang, active)
-    alternates = ''.join(f'<link rel="alternate" hreflang="{code}" href="https://alaface.github.io{local_path(code, active)}">' for code in LANGUAGES)
+    alternates = ''.join(f'<link rel="alternate" hreflang="{LANGUAGE_TAGS.get(code, code)}" href="https://alaface.github.io{local_path(code, active)}">' for code in LANGUAGES)
     default_path = f'/{active}/' if active else '/'
     math_scripts = '<script src="/assets/math.js"></script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-chtml.js"></script>' if math else ''
     return f'''<!doctype html>
-<html lang="{lang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<html lang="{LANGUAGE_TAGS.get(lang, lang)}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{esc(title)} — Antonio Laface</title><meta name="description" content="{esc(t['description'])}">
 <link rel="canonical" href="https://alaface.github.io{local_path(lang, active)}">{alternates}<link rel="alternate" hreflang="x-default" href="https://alaface.github.io{default_path}">
 <script src="/assets/language.js"></script><link rel="stylesheet" href="/assets/css/style.css">{math_scripts}<script defer src="/assets/filter.js"></script></head>
@@ -294,7 +296,8 @@ def page(title, active, body, math=False, lang='en'):
 def updated(data, lang='en'):
     stamp = datetime.fromisoformat(data['updated']).astimezone(timezone.utc)
     # Numeric dates avoid relying on the runner's installed system locales.
-    date = stamp.strftime('%Y-%m-%d, %H:%M UTC' if lang == 'en' else '%d/%m/%Y, %H:%M UTC' if lang == 'es' else '%d.%m.%Y, %H:%M UTC')
+    formats = {'en': '%Y-%m-%d, %H:%M UTC', 'es': '%d/%m/%Y, %H:%M UTC', 'zh': '%Y年%m月%d日 %H:%M UTC'}
+    date = stamp.strftime(formats.get(lang, '%d.%m.%Y, %H:%M UTC'))
     return f'<p class="meta">{TRANSLATIONS[lang]["updated"]} <time datetime="{esc(data["updated"])}">{date}</time></p>'
 
 def search_box(count, label, lang='en', repositories=False):
@@ -364,7 +367,8 @@ def render(publications, arxiv, repositories):
     preprints = recent_preprints(preprints)
     for lang in LANGUAGES:
         t = TRANSLATIONS[lang]
-        home = f'''<section class="hero"><div><p class="eyebrow">{t['mathematics']} · Universidad de Concepción</p><h1>Antonio Laface</h1><p class="position">{t['position']}</p><p class="affiliation"><a href="https://dmat-udec.cl/">{t['department']}</a><br><a href="https://cfm.udec.cl/">{t['faculty']}</a><br><a href="https://www.udec.cl/">Universidad de Concepción</a>, Chile</p><p class="contact"><a href="mailto:antonio.laface@gmail.com">antonio.laface@gmail.com</a><br><a href="tel:+56412203173">+56 41 220 3173</a><br>Casilla 160-C, Concepción, Chile</p><p><a href="https://scholar.google.com/citations?user=ejWJMPkAAAAJ&amp;hl={lang}">Google Scholar ↗</a></p></div><figure><img src="/assets/home.jpg" width="600" height="449" alt="{t['photo']}" fetchpriority="high"></figure></section>
+        scholar_lang = 'zh-CN' if lang == 'zh' else lang
+        home = f'''<section class="hero"><div><p class="eyebrow">{t['mathematics']} · Universidad de Concepción</p><h1>Antonio Laface</h1><p class="position">{t['position']}</p><p class="affiliation"><a href="https://dmat-udec.cl/">{t['department']}</a><br><a href="https://cfm.udec.cl/">{t['faculty']}</a><br><a href="https://www.udec.cl/">Universidad de Concepción</a>, Chile</p><p class="contact"><a href="mailto:antonio.laface@gmail.com">antonio.laface@gmail.com</a><br><a href="tel:+56412203173">+56 41 220 3173</a><br>Casilla 160-C, Concepción, Chile</p><p><a href="https://scholar.google.com/citations?user=ejWJMPkAAAAJ&amp;hl={scholar_lang}">Google Scholar ↗</a></p></div><figure><img src="/assets/home.jpg" width="600" height="449" alt="{t['photo']}" fetchpriority="high"></figure></section>
 <section class="section-links" aria-label="{t['explore']}"><a href="{local_path(lang, 'papers')}"><strong>{t['papers']} ↗</strong><span>{t['publications_teaser']}</span></a><a href="{local_path(lang, 'arxiv')}"><strong>{t['arxiv']} ↗</strong><span>{t['preprints_teaser']}</span></a><a href="{local_path(lang, 'software')}"><strong>{t['software']} ↗</strong><span>{t['software_teaser']}</span></a><a href="{local_path(lang, 'book')}"><strong>Cox Rings ↗</strong><span>Cambridge Studies in Advanced Mathematics</span></a></section>
 <p class="meta"><a href="/halphen-surfaces/">{t['catalogue_teaser']}</a></p>'''
         write_page(lang, '', t['home'], home)

@@ -1,6 +1,6 @@
 'use strict';
 (() => {
-  const supported = ['en', 'es', 'ru', 'de'];
+  const supported = ['en', 'es', 'ru', 'de', 'zh'];
   const key = 'laface-language';
   const url = new URL(window.location.href);
   const first = url.pathname.split('/')[1];

@@ -65,6 +65,28 @@
     "jacobian_intro": "Exakte Berechnungen und Materialien zur Überprüfung der Semiamplizität auf jacobischen elliptischen Flächen.", "project": "Projekt ansehen →",
     "book_authors": "Ivan Arzhantsev, Ulrich Derenthal, Jürgen Hausen und Antonio Laface", "book_intro": "Eine Einführung in Cox-Ringe und ihre Anwendungen in der algebraischen Geometrie.", "publisher": "Buch bei Cambridge University Press ansehen →"
   },
+  "zh": {
+    "home": "首页", "papers": "出版物", "arxiv": "预印本", "software": "软件", "book": "专著",
+    "description": "Antonio Laface，智利康塞普西翁大学数学正教授。出版物、预印本与数学软件。",
+    "skip": "跳转到正文", "navigation": "主导航", "language": "语言", "explore": "浏览",
+    "mathematics": "数学", "position": "正教授", "department": "数学系", "faculty": "物理与数学科学学院",
+    "photo": "在清澈碧绿的海水中游动的魟鱼",
+    "publications_teaser": "论文、书籍章节与专著", "preprints_teaser": "arXiv 上的近期预印本", "software_teaser": "代码与计算资源",
+    "catalogue_teaser": "浏览极端 Halphen 曲面目录 →", "research": "研究",
+    "publications_intro": "论文、书籍章节与专著，按发表时间从新到旧排列。",
+    "updated": "每日更新 · 最近同步时间：", "profile": "zbMATH Open 作者主页",
+    "search_publications": "按标题、作者或年份搜索出版物", "filter": "输入关键词筛选…", "count": "共 {count} 条", "filtered": "显示 {visible} 条，共 {total} 条", "empty": "没有找到匹配的条目。",
+    "bibliography": "书目元数据：", "license": "许可协议：", "metadata_note": "元数据经过筛选与格式调整；不转载评论。",
+    "preprints_intro": "近五年的预印本，以及已发表论文的 arXiv 存档。", "all_arxiv": "arXiv 上的全部论文",
+    "search_preprints": "按标题、作者、年份或 arXiv 编号搜索论文", "archive": "已发表论文的 arXiv 存档", "submitted": "首次提交", "revised": "修订", "abstract": "摘要",
+    "arxiv_note": "来源：arXiv。预印本日期以首次提交至 arXiv 的日期为准。发表状态依据现有书目记录确定。",
+    "original_language": "标题与摘要保留原文。",
+    "resources": "计算资源", "repositories_intro": "{github} 上的全部 {count} 个公开代码仓库，按字母顺序排列。", "search_repositories": "搜索代码仓库", "reset": "显示全部代码仓库", "repositories_count": "共 {count} 个代码仓库", "repositories_empty": "没有找到匹配的代码仓库。",
+    "fork": "派生仓库", "archived": "已归档", "support": "目录与补充材料", "halphen": "极端 Halphen 曲面",
+    "halphen_intro": "包含 26 个显式平面模型的目录，附有标记点、分支的除子类及验证说明。", "open_catalogue": "打开目录 →", "jacobian": "Jacobian 椭圆曲面",
+    "jacobian_intro": "关于 Jacobian 椭圆曲面上除子半丰沛性的精确计算与验证材料。", "project": "查看项目 →",
+    "book_authors": "Ivan Arzhantsev、Ulrich Derenthal、Jürgen Hausen 与 Antonio Laface", "book_intro": "介绍 Cox 环及其在代数几何中的应用。", "publisher": "前往剑桥大学出版社查看本书 →"
+  },
   "ru": {
     "home": "Главная", "papers": "Публикации", "arxiv": "Препринты", "software": "Программы", "book": "Книга",
     "description": "Антонио Лафаче, профессор математики Университета Консепсьона. Публикации, препринты и математические программы.",
