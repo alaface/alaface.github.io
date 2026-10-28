@@ -21,6 +21,8 @@ ROOT = Path(__file__).resolve().parents[1]
 TRANSLATIONS = json.loads((ROOT / 'scripts/translations.json').read_text(encoding='utf-8'))
 LANGUAGES = {'en': 'English', 'es': 'Español', 'ru': 'Русский', 'de': 'Deutsch', 'zh': '简体中文'}
 LANGUAGE_TAGS = {'zh': 'zh-Hans'}
+# Temporary switch: retain translations so multilingual navigation can be restored.
+MULTILINGUAL_ENABLED = False
 DATA = ROOT / 'data'
 AUTHOR = 'laface.antonio'
 ZB_PROFILE = 'https://zbmath.org/?q=ai%3Alaface.antonio'
@@ -281,12 +283,12 @@ def language_picker(lang, active):
 def page(title, active, body, math=False, lang='en'):
     t = TRANSLATIONS[lang]
     links = ''.join(f'<a href="{local_path(lang, slug)}"' + (' aria-current="page"' if slug == active else '') + f'>{t[slug]}</a>' for slug in ('papers', 'arxiv', 'software', 'book'))
-    switcher = language_picker(lang, active)
-    alternates = ''.join(f'<link rel="alternate" hreflang="{LANGUAGE_TAGS.get(code, code)}" href="https://alaface.github.io{local_path(code, active)}">' for code in LANGUAGES)
+    switcher = language_picker(lang, active) if MULTILINGUAL_ENABLED else ''
+    alternates = ''.join(f'<link rel="alternate" hreflang="{LANGUAGE_TAGS.get(code, code)}" href="https://alaface.github.io{local_path(code, active)}">' for code in (LANGUAGES if MULTILINGUAL_ENABLED else ('en',)))
     default_path = f'/{active}/' if active else '/'
     math_scripts = '<script src="/assets/math.js"></script><script defer src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-chtml.js"></script>' if math else ''
     return f'''<!doctype html>
-<html lang="{LANGUAGE_TAGS.get(lang, lang)}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<html lang="{LANGUAGE_TAGS.get(lang, lang)}" data-language-mode="{'multilingual' if MULTILINGUAL_ENABLED else 'en-only'}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{esc(title)} — Antonio Laface</title><meta name="description" content="{esc(t['description'])}">
 <link rel="canonical" href="https://alaface.github.io{local_path(lang, active)}">{alternates}<link rel="alternate" hreflang="x-default" href="https://alaface.github.io{default_path}">
 <script src="/assets/language.js"></script><link rel="stylesheet" href="/assets/css/style.css">{math_scripts}<script defer src="/assets/filter.js"></script></head>
@@ -360,12 +362,19 @@ def write_page(lang, slug, title, body, math=False):
         legacy = ROOT / slug / 'index.html'
         legacy.parent.mkdir(parents=True, exist_ok=True)
         legacy.write_text(html, encoding='utf-8')
+        if not MULTILINGUAL_ENABLED:
+            # Old bookmarks remain readable in English even without JavaScript.
+            for code in LANGUAGES:
+                if code != 'en':
+                    alias = ROOT / code / slug / 'index.html'
+                    alias.parent.mkdir(parents=True, exist_ok=True)
+                    alias.write_text(html, encoding='utf-8')
 
 def render(publications, arxiv, repositories):
     pubs, repos = publications['items'], repositories['items']
     preprints, published = partition_arxiv(arxiv['items'], pubs)
     preprints = recent_preprints(preprints)
-    for lang in LANGUAGES:
+    for lang in (LANGUAGES if MULTILINGUAL_ENABLED else ('en',)):
         t = TRANSLATIONS[lang]
         scholar_lang = 'zh-CN' if lang == 'zh' else lang
         home = f'''<section class="hero"><div><p class="eyebrow">{t['mathematics']} · Universidad de Concepción</p><h1>Antonio Laface</h1><p class="position">{t['position']}</p><p class="affiliation"><a href="https://dmat-udec.cl/">{t['department']}</a><br><a href="https://cfm.udec.cl/">{t['faculty']}</a><br><a href="https://www.udec.cl/">Universidad de Concepción</a>, Chile</p><p class="contact"><a href="mailto:antonio.laface@gmail.com">antonio.laface@gmail.com</a><br><a href="tel:+56412203173">+56 41 220 3173</a><br>Casilla 160-C, Concepción, Chile</p><p><a href="https://scholar.google.com/citations?user=ejWJMPkAAAAJ&amp;hl={scholar_lang}">Google Scholar ↗</a></p></div><figure><img src="/assets/home.jpg" width="600" height="449" alt="{t['photo']}" fetchpriority="high"></figure></section>
@@ -394,7 +403,7 @@ def render(publications, arxiv, repositories):
         write_page(lang, 'software', t['software'], body)
         body = f'<p class="eyebrow">Cambridge Studies in Advanced Mathematics · 144</p><h1><em>Cox Rings</em></h1><p class="lead">{t["book_authors"]}</p><div class="card"><h2>Cambridge University Press, 2015</h2><p>{t["book_intro"]}</p><div class="source-links">{link("https://doi.org/10.1017/CBO9781139175852", t["publisher"])}{link("https://arxiv.org/abs/1003.4229", "arXiv")}</div></div>'
         write_page(lang, 'book', 'Cox Rings', body)
-    print(f'Rendered {len(pubs)} publications, {len(preprints)} preprints, {len(published)} archived arXiv papers and {len(repos)} public repositories in {len(LANGUAGES)} languages.')
+    print(f'Rendered {len(pubs)} publications, {len(preprints)} preprints, {len(published)} archived arXiv papers and {len(repos)} public repositories in {len(LANGUAGES) if MULTILINGUAL_ENABLED else 1} languages.')
 
 
 def main():

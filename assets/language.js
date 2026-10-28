@@ -4,6 +4,18 @@
   const key = 'laface-language';
   const url = new URL(window.location.href);
   const first = url.pathname.split('/')[1];
+  if (document.documentElement.dataset.languageMode === 'en-only') {
+    // Ignore saved/browser preferences while translations are temporarily paused.
+    if (supported.includes(first)) {
+      if (first === 'en') return;
+      url.pathname = url.pathname.replace(/^\/[^/]+/, '/en');
+    } else {
+      if (!/^\/(?:index\.html)?$|^\/(?:papers|arxiv|software|book)\/(?:index\.html)?$/.test(url.pathname)) return;
+      url.pathname = `/en${url.pathname.replace(/index\.html$/, '')}`;
+    }
+    window.location.replace(url.href);
+    return;
+  }
   if (supported.includes(first)) {
     // An explicit language URL always wins over saved or browser preferences.
     try { localStorage.setItem(key, first); } catch (_) { /* Storage is optional. */ }
