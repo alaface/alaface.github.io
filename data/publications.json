@@ -1,7 +1,22 @@
 {
   "source": "https://zbmath.org/?q=ai%3Alaface.antonio",
-  "updated": "2026-11-18T15:50:29+00:00",
+  "updated": "2026-11-19T15:54:21+00:00",
   "items": [
+    {
+      "id": "8284698",
+      "title": "The Cox ring of an embedded variety",
+      "authors": [
+        "Cristóbal Herrera",
+        "Antonio Laface",
+        "Luca Ugaglia"
+      ],
+      "year": "2026",
+      "citation": "Adv. Math. 506, Article ID 111354, 27 p. (2026)",
+      "url": "https://zbmath.org/8284698",
+      "doi": "10.1016/j.aim.2026.111354",
+      "arxiv": [],
+      "license": []
+    },
     {
       "id": "8173398",
       "title": "Equivalent conjectures on blowing-ups of \\(\\mathbb{P}^2\\)",
